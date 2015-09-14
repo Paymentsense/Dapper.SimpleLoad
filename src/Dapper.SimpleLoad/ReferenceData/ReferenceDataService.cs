@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
+using Dapper;
 using Dapper.SimpleSave;
 
 namespace Dapper.SimpleLoad.ReferenceData
