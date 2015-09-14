@@ -66,12 +66,14 @@
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="DummyObjectCache.cs" />
+    <Compile Include="Impl\SelectListBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaseCustomQueryDapperRepository.cs" />
     <Compile Include="IDbConnectionFactory.cs" />
     <Compile Include="ReferenceData\IReferenceDataService.cs" />
     <Compile Include="ReferenceData\ReferenceDataService.cs" />
     <Compile Include="SimpleLoadExtensions.cs" />
+    <Compile Include="SimpleLoadIgnoreAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

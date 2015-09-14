@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
 using Dapper;
+using Dapper.SimpleLoad.Impl;
 using Dapper.SimpleSave;
 
 namespace Dapper.SimpleLoad.ReferenceData
@@ -276,33 +277,10 @@ namespace Dapper.SimpleLoad.ReferenceData
 
         private string BuildQueryFor(DtoMetadata metadata)
         {
-            var columnBuilder = new StringBuilder();
-
-            foreach (var property in metadata.Properties)
-            {
-                //  At the moment this isn't sophisticated enough to drill down through tables.
-                //  We might want to add this in future but, given it's currently only used to retrieve
-                //  data to populate lists and dropdowns it seems unnecessary.
-                if (property.HasAttribute<OneToManyAttribute>()
-                    || property.HasAttribute<ManyToManyAttribute>()
-                    || property.IsEnumerable)
-                {
-                    continue;
-                }
-
-                if (columnBuilder.Length > 0)
-                {
-                    columnBuilder.Append(", ");
-                }
-
-                columnBuilder.Append('[');
-                columnBuilder.Append(property.ColumnName);
-                columnBuilder.Append(']');
-            }
-
+            var columns = SelectListBuilder.BuildSelectListFor(metadata);
             return string.Format(
                 "SELECT {0} FROM {1}",
-                columnBuilder,
+                columns,
                 metadata.TableName);
         }
     }
