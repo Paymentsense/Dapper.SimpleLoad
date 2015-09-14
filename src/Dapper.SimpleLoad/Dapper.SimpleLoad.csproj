@@ -68,6 +68,7 @@
     <Compile Include="IDbConnectionFactory.cs" />
     <Compile Include="ReferenceData\IReferenceDataService.cs" />
     <Compile Include="ReferenceData\ReferenceDataService.cs" />
+    <Compile Include="SimpleLoadExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
