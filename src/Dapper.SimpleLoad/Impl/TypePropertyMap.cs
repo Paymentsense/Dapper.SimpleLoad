@@ -52,7 +52,7 @@ namespace Dapper.SimpleLoad.Impl
                 {
                     if (buff.Length == 0 || char.IsUpper(ch))
                     {
-                        buff.Append(ch);
+                        buff.Append(char.ToLower(ch));
                     }
                 }
             }
