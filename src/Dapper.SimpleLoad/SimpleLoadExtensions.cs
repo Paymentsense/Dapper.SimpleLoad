@@ -171,7 +171,7 @@ namespace Dapper.SimpleLoad
         {
             var map = new TypePropertyMap(SimpleSaveExtensions.MetadataCache, types);
             var query = QueryBuilder.BuildQuery(map, tableAliases, whereClauseExpression, parameters);
-            var alreadyEncounteredDictionaries = CreateAlreadyEncounteredDictionaries();
+            var alreadyEncounteredDictionaries = CreateAlreadyEncounteredDictionaries(types.Count);
             var results = new List<T1>();
 
             connection.Query(
@@ -227,14 +227,29 @@ namespace Dapper.SimpleLoad
                                 var addMethod = propertyMetadata.Prop.PropertyType.GetMethod("Add");
                                 if (addMethod == null)
                                 {
-                                    //  TODO: barf
+                                    throw new InvalidOperationException(
+                                        string.Format(
+                                            "The type '{0}' of property '{1}' on '{2}' does not implement an "
+                                            + "Add(object) method so objects of type '{3}' cannot be added to it.",
+                                            propertyMetadata.Prop.PropertyType.FullName,
+                                            propertyMetadata.Prop.Name,
+                                            targetEntry.Metadata.DtoType.FullName,
+                                            metadata.DtoType.FullName));
                                 }
 
                                 addMethod.Invoke(list, new [] {current});
                             }
                             else
                             {
-                                //  TODO: barf
+                                throw new InvalidOperationException(
+                                    string.Format(
+                                        "The property '{0}' on '{1}' is of type '{2}', which does not match "
+                                        + "the type of value to be set, which is a '{3}', nor is it a list to "
+                                        + "which the '{3}' can be added",
+                                        propertyMetadata.Prop.Name,
+                                        targetEntry.Metadata.DtoType.FullName,
+                                        propertyMetadata.Prop.PropertyType.FullName,
+                                        metadata.DtoType.FullName));
                             }
                         }
                     }

@@ -10,7 +10,7 @@ namespace Dapper.SimpleLoad.Impl
     {
         //  TODO: You are DEFINITELY going to want to cache these bad boys!
 
-        //  TODO: split on columns!
+        //  TODO: split on columns - make sure these are actually the PK columns otherwise it'll all go tits up (really they need to be unique to the object concerned or, due to Dapper limitations, it'll all go tits up, but there's nothing you can do about that in SimpleLoad)
 
         public static IQuery BuildQuery(
             TypePropertyMap map,
@@ -91,8 +91,20 @@ namespace Dapper.SimpleLoad.Impl
             var target = map.GetEntryWithMatchingPropertyPreceding(index, entry.Type);
             if (target == null)
             {
-                //  TODO: throw an exception with a helpful message
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Unable to find any property "
+                        + "that fits type '{0}'. Please ensure you have included all the necessary "
+                        + "types in your query, and that any type to which '{0}' should be added "
+                        + "precedes it in the list of types otherwise, like soldiers killed in "
+                        + "Stanley Kubrick's Full Metal Jacket, you will be in a world of s***.",
+                        entry.Type));
             }
+
+            //  TODO: this is a bit naive for dealing with all the different relationship types
+            //  the referenced PK might actually be on the parent object with the FK in the child
+            //  What about when the property is a collection that just has a [Column] attribute?
+            //  This is definitely going Pete Tong.
 
             fromAndJoinsBuff.Append("    ON ");
             AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey);
@@ -108,7 +120,14 @@ namespace Dapper.SimpleLoad.Impl
         {
             if (property == null)
             {
-                //  TODO: throw an exception with a (different) helpful message
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Unable to generate JOIN condition because no suitable join property could "
+                        + "be found on '{0}'. This might be because you haven't marked a property with "
+                        + "the [PrimaryKey] attribute from Dapper.SimpleSave, or because no matching "
+                        + "target property can be found on the target object, although this seems a bit "
+                        + "unlikely.",
+                        entry.Type));
             }
             fromAndJoinsBuff.Append(entry.Alias);
             fromAndJoinsBuff.Append(".[");
