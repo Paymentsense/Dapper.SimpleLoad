@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.SimpleLoad", "Dapper.SimpleLoad\Dapper.SimpleLoad.csproj", "{2249C112-8A7B-441F-A89F-9DFFF4065525}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.SimpleLoad.Tests", "Dapper.SimpleLoad.Tests\Dapper.SimpleLoad.Tests.csproj", "{952174DF-C2D7-41DD-8D99-311F7FD68185}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2249C112-8A7B-441F-A89F-9DFFF4065525}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2249C112-8A7B-441F-A89F-9DFFF4065525}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2249C112-8A7B-441F-A89F-9DFFF4065525}.Release|Any CPU.Build.0 = Release|Any CPU
+		{952174DF-C2D7-41DD-8D99-311F7FD68185}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{952174DF-C2D7-41DD-8D99-311F7FD68185}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{952174DF-C2D7-41DD-8D99-311F7FD68185}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{952174DF-C2D7-41DD-8D99-311F7FD68185}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

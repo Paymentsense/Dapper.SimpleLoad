@@ -10,24 +10,25 @@ namespace Dapper.SimpleLoad.Impl
             string tableAlias = null)
         {
             var buffer = new StringBuilder();
-            AppendSelectListFor(buffer, metadata, tableAlias);
+            AppendSelectListAndGetFirstColumnFor(buffer, metadata, tableAlias);
             return buffer.ToString();
         }
 
-        public static void AppendSelectListFor(
+        public static string AppendSelectListAndGetFirstColumnFor(
             StringBuilder buffer,
             DtoMetadata metadata,
             string tableAlias = null)
         {
-            AppendSelectListFor(buffer, metadata, false, tableAlias);
+            return AppendSelectListAndGetFirstColumnFor(buffer, metadata, false, tableAlias);
         }
 
-        public static void AppendSelectListFor(
+        public static string AppendSelectListAndGetFirstColumnFor(
             StringBuilder buffer,
             DtoMetadata metadata,
             bool iNeedALeadingComma,
             string tableAlias = null)
         {
+            string firstColumn = null;
             foreach (var property in metadata.Properties)
             {
                 //  At the moment this isn't sophisticated enough to drill down through tables.
@@ -56,7 +57,13 @@ namespace Dapper.SimpleLoad.Impl
                 buffer.Append('[');
                 buffer.Append(property.ColumnName);
                 buffer.Append(']');
+
+                if (firstColumn == null)
+                {
+                    firstColumn = property.ColumnName;
+                }
             }
+            return firstColumn;
         }
     }
 }

@@ -8,45 +8,81 @@ namespace Dapper.SimpleLoad.Impl
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(TypePropertyMap map, object parameters)
+        //  TODO: You are DEFINITELY going to want to cache these bad boys!
+
+        //  TODO: split on columns!
+
+        public static IQuery BuildQuery(
+            TypePropertyMap map,
+            string [] aliases,
+            string whereClauseExpression,
+            object parameters)
         {
+            var query = new Query();
             var selectListBuff = new StringBuilder();
             var fromAndJoinsBuff = new StringBuilder();
             var whereConditionBuff = new StringBuilder();
+            var splitOn = new StringBuilder();
 
             for (int index = 0, size = map.Count; index < size; ++index)
             {
                 var entry = map[index];
                 var metadata = entry.Metadata;
-                SelectListBuilder.AppendSelectListFor(
+                var alias = string.IsNullOrEmpty(whereClauseExpression) ? entry.Alias : aliases[index];
+                var firstColumn = SelectListBuilder.AppendSelectListAndGetFirstColumnFor(
                     selectListBuff,
                     metadata,
                     index > 0,
-                    entry.Alias);
+                    alias);
+
+                if (index > 0)
+                {
+                    if (splitOn.Length > 0)
+                    {
+                        splitOn.Append(", ");
+                    }
+                    splitOn.Append(firstColumn);
+                }
 
                 var table = metadata.GetAttribute<TableAttribute>();
 
                 if (index == 0)
                 {
                     fromAndJoinsBuff.Append("FROM ");
-                    fromAndJoinsBuff.Append(table.SchemaQualifiedTableName);
-                    fromAndJoinsBuff.Append(Environment.NewLine);
+                    AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
 
-                    BuildWhereCondition(parameters, whereConditionBuff, entry);
+                    if (string.IsNullOrEmpty(whereClauseExpression))
+                    {
+                        BuildWhereCondition(parameters, whereConditionBuff, entry);
+                    }
+                    else
+                    {
+                        whereConditionBuff.Append("WHERE ");
+                        whereConditionBuff.Append(whereClauseExpression);
+                    }
                 }
                 else
                 {
                     fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
-                    fromAndJoinsBuff.Append(table.SchemaQualifiedTableName);
-                    fromAndJoinsBuff.Append(Environment.NewLine);
+                    AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
 
                     AppendJoinCondition(map, index, entry, fromAndJoinsBuff, metadata);
                 }
             }
 
-            return string.Format(@"SELECT {0}
+            query.Sql = string.Format(@"SELECT {0}
 {1}
-WHERE {2};", selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+{2};", selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+            query.SplitOn = splitOn.ToString();
+            return query;
+        }
+
+        private static void AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, TableAttribute table, string alias)
+        {
+            fromAndJoinsBuff.Append(table.SchemaQualifiedTableName);
+            fromAndJoinsBuff.Append(" AS ");
+            fromAndJoinsBuff.Append(alias);
+            fromAndJoinsBuff.Append(Environment.NewLine);
         }
 
         private static void AppendJoinCondition(TypePropertyMap map, int index, TypePropertyMapEntry entry,
@@ -113,7 +149,11 @@ WHERE {2};", selectListBuff, fromAndJoinsBuff, whereConditionBuff);
         private static void AppendConditionForParameter(StringBuilder whereConditionBuff, TypePropertyMapEntry entry,
             string parameterName)
         {
-            if (whereConditionBuff.Length > 0)
+            if (whereConditionBuff.Length == 0)
+            {
+                whereConditionBuff.Append("WHERE ");
+            }
+            else
             {
                 whereConditionBuff.Append("    AND ");
             }
