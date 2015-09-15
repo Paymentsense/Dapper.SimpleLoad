@@ -16,11 +16,13 @@ namespace Dapper.SimpleLoad.Impl
             DtoMetadataCache cache,
             Type type,
             string alias,
+            int index,
             ISet<Type> typesWeCareAbout)
         {
             Type = type;
             Metadata = cache.GetMetadataFor(type);
             Alias = alias;
+            Index = index;
             foreach (var property in Metadata.Properties)
             {
                 if (property.IsEnumerable)
@@ -47,6 +49,8 @@ namespace Dapper.SimpleLoad.Impl
         public DtoMetadata Metadata { get; private set; }
 
         public string Alias { get; private set; }
+
+        public int Index { get; private set; }
 
         public PropertyMetadata GetPropertyMetadataFor(Type propertyType)
         {

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -162,8 +163,15 @@ namespace Dapper.SimpleLoad
             CheckTypes(types);
             CheckTableAliases(additionalTypes, tableAliases, whereClauseExpression);
 
+            return AutoQuery<T1>(connection, types, tableAliases, whereClauseExpression, parameters);
+        }
+
+        private static IEnumerable<T1> AutoQuery<T1>(IDbConnection connection, List<Type> types, string[] tableAliases,
+            string whereClauseExpression, object parameters)
+        {
             var map = new TypePropertyMap(SimpleSaveExtensions.MetadataCache, types);
             var query = QueryBuilder.BuildQuery(map, tableAliases, whereClauseExpression, parameters);
+            var alreadyEncounteredDictionaries = CreateAlreadyEncounteredDictionaries();
             var results = new List<T1>();
 
             connection.Query(
@@ -171,13 +179,81 @@ namespace Dapper.SimpleLoad
                 types.ToArray(),
                 objects =>
                 {
-                    // TODO
+                    for (int index = 0, size = objects.Length; index < size; ++index)
+                    {
+                        var current = objects[index];
+                        var alreadyEncountered = alreadyEncounteredDictionaries[index];
+                        var entry = map[index];
+                        var metadata = entry.Metadata;
+                        var primaryKey = metadata.GetPrimaryKeyValueAsObject(current);
+                        if (alreadyEncountered.Contains(primaryKey))
+                        {
+                            current = alreadyEncountered[primaryKey];
+                        }
+                        else
+                        {
+                            alreadyEncountered[primaryKey] = current;
+                            if (index == 0)
+                            {
+                                results.Add((T1) current);
+                            }
+                        }
+
+                        if (index > 0)
+                        {
+                            var targetEntry = map.GetEntryWithMatchingPropertyPreceding(index, entry.Type);
+                            var propertyMetadata = targetEntry.GetPropertyMetadataFor(entry.Type);
+                            var targetObject = objects[targetEntry.Index];
+                            var targetsAlreadyEncountered = alreadyEncounteredDictionaries[targetEntry.Index];
+                            var targetPrimaryKey = targetEntry.Metadata.GetPrimaryKeyValueAsObject(targetObject);
+                            if (targetsAlreadyEncountered.Contains(targetObject))
+                            {
+                                targetObject = targetsAlreadyEncountered[targetPrimaryKey];
+                            }
+
+                            if (propertyMetadata.Prop.PropertyType == entry.Type)
+                            {
+                                propertyMetadata.Prop.SetValue(targetObject, current);
+                            }
+                            else if (propertyMetadata.IsEnumerable)
+                            {
+                                var list = propertyMetadata.Prop.GetValue(targetObject);
+                                if (null == list)
+                                {
+                                    list = Activator.CreateInstance(propertyMetadata.Prop.PropertyType);
+                                    propertyMetadata.Prop.SetValue(targetObject, list);
+                                }
+
+                                var addMethod = propertyMetadata.Prop.PropertyType.GetMethod("Add");
+                                if (addMethod == null)
+                                {
+                                    //  TODO: barf
+                                }
+
+                                addMethod.Invoke(list, new [] {current});
+                            }
+                            else
+                            {
+                                //  TODO: barf
+                            }
+                        }
+                    }
                     return true;
                 },
                 splitOn: query.SplitOn,
                 param: parameters);
 
             return results;
+        }
+
+        private static IList<Hashtable> CreateAlreadyEncounteredDictionaries(int count)
+        {
+            var alreadyEncounteredDictionaries = new List<Hashtable>(count);
+            for (int index = 0, size = count; index < size; ++index)
+            {
+                alreadyEncounteredDictionaries.Add(new Hashtable());
+            }
+            return alreadyEncounteredDictionaries;
         }
 
         private static void CheckTypes(IEnumerable<Type> types)

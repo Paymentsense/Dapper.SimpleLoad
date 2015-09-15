@@ -22,14 +22,16 @@ namespace Dapper.SimpleLoad.Impl
                 typeSet.Add(type);
             }
 
-            int count = 0;
+            int index = 0;
             foreach (var type in types)
             {
                 _entries.Add(new TypePropertyMapEntry(
                     cache,
                     type,
-                    GenerateAliasFor(type, count++),
+                    GenerateAliasFor(type, index),
+                    index,
                     typeSet));
+                ++index;
             }
         }
 
