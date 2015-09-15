@@ -19,6 +19,15 @@ namespace Dapper.SimpleLoad.Impl
             DtoMetadata metadata,
             string tableAlias = null)
         {
+            AppendSelectListFor(buffer, metadata, false, tableAlias);
+        }
+
+        public static void AppendSelectListFor(
+            StringBuilder buffer,
+            DtoMetadata metadata,
+            bool iNeedALeadingComma,
+            string tableAlias = null)
+        {
             foreach (var property in metadata.Properties)
             {
                 //  At the moment this isn't sophisticated enough to drill down through tables.
@@ -32,7 +41,7 @@ namespace Dapper.SimpleLoad.Impl
                     continue;
                 }
 
-                if (buffer.Length > 0)
+                if (buffer.Length > 0 || iNeedALeadingComma)
                 {
                     buffer.Append(", ");
                 }
