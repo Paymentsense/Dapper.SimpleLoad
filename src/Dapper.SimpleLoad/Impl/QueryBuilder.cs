@@ -53,7 +53,7 @@ namespace Dapper.SimpleLoad.Impl
 
                     if (string.IsNullOrEmpty(whereClauseExpression))
                     {
-                        BuildWhereCondition(parameters, whereConditionBuff, entry);
+                        BuildWhereCondition(parameters, whereConditionBuff, entry, aliases);
                     }
                     else
                     {
@@ -66,7 +66,7 @@ namespace Dapper.SimpleLoad.Impl
                     fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
                     AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
 
-                    AppendJoinCondition(map, index, entry, fromAndJoinsBuff, metadata);
+                    AppendJoinCondition(map, index, entry, fromAndJoinsBuff, metadata, aliases);
                 }
             }
 
@@ -86,7 +86,7 @@ namespace Dapper.SimpleLoad.Impl
         }
 
         private static void AppendJoinCondition(TypePropertyMap map, int index, TypePropertyMapEntry entry,
-            StringBuilder fromAndJoinsBuff, DtoMetadata metadata)
+            StringBuilder fromAndJoinsBuff, DtoMetadata metadata, string [] aliases)
         {
             var target = map.GetEntryWithMatchingPropertyPreceding(index, entry.Type);
             if (target == null)
@@ -107,16 +107,17 @@ namespace Dapper.SimpleLoad.Impl
             //  This is definitely going Pete Tong.
 
             fromAndJoinsBuff.Append("    ON ");
-            AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey);
+            AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
             fromAndJoinsBuff.Append(" = ");
-            AppendJoinConditionArgument(target, fromAndJoinsBuff, target.GetPropertyMetadataFor(entry.Type));
+            AppendJoinConditionArgument(target, fromAndJoinsBuff, target.GetPropertyMetadataFor(entry.Type), aliases);
             fromAndJoinsBuff.Append(Environment.NewLine);
         }
 
         private static void AppendJoinConditionArgument(
             TypePropertyMapEntry entry,
             StringBuilder fromAndJoinsBuff,
-            PropertyMetadata property)
+            PropertyMetadata property,
+            string [] aliases)
         {
             if (property == null)
             {
@@ -129,13 +130,14 @@ namespace Dapper.SimpleLoad.Impl
                         + "unlikely.",
                         entry.Type));
             }
-            fromAndJoinsBuff.Append(entry.Alias);
+            var alias = aliases == null ? entry.Alias : aliases[entry.Index];
+            fromAndJoinsBuff.Append(alias);
             fromAndJoinsBuff.Append(".[");
             fromAndJoinsBuff.Append(property.ColumnName);
             fromAndJoinsBuff.Append("]");
         }
 
-        private static void BuildWhereCondition(object parameters, StringBuilder whereConditionBuff, TypePropertyMapEntry entry)
+        private static void BuildWhereCondition(object parameters, StringBuilder whereConditionBuff, TypePropertyMapEntry entry, string [] aliases)
         {
             if (parameters != null)
             {
@@ -146,7 +148,8 @@ namespace Dapper.SimpleLoad.Impl
                         AppendConditionForParameter(
                             whereConditionBuff,
                             entry,
-                            kvp.Key);
+                            kvp.Key,
+                            aliases);
                     }
                 }
                 else
@@ -159,14 +162,18 @@ namespace Dapper.SimpleLoad.Impl
                         AppendConditionForParameter(
                             whereConditionBuff,
                             entry,
-                            property.Name);
+                            property.Name,
+                            aliases);
                     }
                 }
             }
         }
 
-        private static void AppendConditionForParameter(StringBuilder whereConditionBuff, TypePropertyMapEntry entry,
-            string parameterName)
+        private static void AppendConditionForParameter(
+            StringBuilder whereConditionBuff,
+            TypePropertyMapEntry entry,
+            string parameterName,
+            string [] aliases)
         {
             if (whereConditionBuff.Length == 0)
             {
@@ -176,7 +183,8 @@ namespace Dapper.SimpleLoad.Impl
             {
                 whereConditionBuff.Append("    AND ");
             }
-            whereConditionBuff.Append(entry.Alias);
+            var alias = aliases == null ? entry.Alias : aliases[entry.Index];
+            whereConditionBuff.Append(alias);
             whereConditionBuff.Append(".[");
             whereConditionBuff.Append(parameterName);
             whereConditionBuff.Append("] = @");
