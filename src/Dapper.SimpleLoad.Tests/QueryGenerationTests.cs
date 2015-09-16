@@ -38,7 +38,29 @@ namespace Dapper.SimpleLoad.Tests
             }
 
             //  TODO: check the script
-            //return Query<ApplicationOpportunitiesDto, ApplicationOpportunityLocationDto, OpportunityDto, OfferVersionDto>
+        }
+
+        [Test]
+        public void generates_correct_query_with_custom_where_condition()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    var results = connection.AutoQuery<PhoneNumberDto, CountryDto>(
+                        new[] {"n", "c"},
+                        "[c].[TelephoneCountryCode] = @CountryCode AND [n].[PhoneNumber] = @Number",
+                        new
+                        {
+                            CountryCode = "44",
+                            Number = "7779123456"
+                        });
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                //  Don't care - connection not open.
+            }
         }
     }
 }

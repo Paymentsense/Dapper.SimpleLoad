@@ -161,7 +161,7 @@ namespace Dapper.SimpleLoad
             types.AddRange(additionalTypes.TakeWhile(type => type != typeof (DontMap)));
 
             CheckTypes(types);
-            CheckTableAliases(additionalTypes, tableAliases, whereClauseExpression);
+            CheckTableAliases(types, tableAliases, whereClauseExpression);
 
             return AutoQuery<T1>(connection, types, tableAliases, whereClauseExpression, parameters);
         }
