@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -164,93 +166,100 @@ namespace Dapper.SimpleLoad
             var map = new TypePropertyMap(SimpleSaveExtensions.MetadataCache, types);
             var query = QueryBuilder.BuildQuery(map, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
             var alreadyEncounteredDictionaries = CreateAlreadyEncounteredDictionaries(types.Count);
-            var results = new List<T1>();
+            try
+            {
+                var results = new List<T1>();
 
-            connection.Query(
-                query.Sql,
-                types.ToArray(),
-                objects =>
-                {
-                    for (int index = 0, size = objects.Length; index < size; ++index)
+                connection.Query(
+                    query.Sql,
+                    types.ToArray(),
+                    objects =>
                     {
-                        var current = objects[index];
-                        var alreadyEncountered = alreadyEncounteredDictionaries[index];
-                        var entry = map[index];
-                        var metadata = entry.Metadata;
-                        var primaryKey = metadata.GetPrimaryKeyValueAsObject(current);
-                        if (alreadyEncountered.Contains(primaryKey))
+                        for (int index = 0, size = objects.Length; index < size; ++index)
                         {
-                            current = alreadyEncountered[primaryKey];
-                        }
-                        else
-                        {
-                            alreadyEncountered[primaryKey] = current;
-                            if (index == 0)
+                            var current = objects[index];
+                            var alreadyEncountered = alreadyEncounteredDictionaries[index];
+                            var entry = map[index];
+                            var metadata = entry.Metadata;
+                            var primaryKey = metadata.GetPrimaryKeyValueAsObject(current);
+                            if (alreadyEncountered.Contains(primaryKey))
                             {
-                                results.Add((T1) current);
-                            }
-                        }
-
-                        if (index > 0)
-                        {
-                            var targetEntry = map.GetEntryWithMatchingPropertyPreceding(index, entry.Type);
-                            var propertyMetadata = targetEntry.GetPropertyMetadataFor(entry.Type);
-                            var targetObject = objects[targetEntry.Index];
-                            var targetsAlreadyEncountered = alreadyEncounteredDictionaries[targetEntry.Index];
-                            var targetPrimaryKey = targetEntry.Metadata.GetPrimaryKeyValueAsObject(targetObject);
-                            if (targetsAlreadyEncountered.Contains(targetObject))
-                            {
-                                targetObject = targetsAlreadyEncountered[targetPrimaryKey];
-                            }
-
-                            if (propertyMetadata.Prop.PropertyType == entry.Type)
-                            {
-                                propertyMetadata.Prop.SetValue(targetObject, current);
-                            }
-                            else if (propertyMetadata.IsEnumerable)
-                            {
-                                var list = propertyMetadata.Prop.GetValue(targetObject);
-                                if (null == list)
-                                {
-                                    list = Activator.CreateInstance(propertyMetadata.Prop.PropertyType);
-                                    propertyMetadata.Prop.SetValue(targetObject, list);
-                                }
-
-                                var addMethod = propertyMetadata.Prop.PropertyType.GetMethod("Add");
-                                if (addMethod == null)
-                                {
-                                    throw new InvalidOperationException(
-                                        string.Format(
-                                            "The type '{0}' of property '{1}' on '{2}' does not implement an "
-                                            + "Add(object) method so objects of type '{3}' cannot be added to it.",
-                                            propertyMetadata.Prop.PropertyType.FullName,
-                                            propertyMetadata.Prop.Name,
-                                            targetEntry.Metadata.DtoType.FullName,
-                                            metadata.DtoType.FullName));
-                                }
-
-                                addMethod.Invoke(list, new [] {current});
+                                current = alreadyEncountered[primaryKey];
                             }
                             else
                             {
-                                throw new InvalidOperationException(
-                                    string.Format(
-                                        "The property '{0}' on '{1}' is of type '{2}', which does not match "
-                                        + "the type of value to be set, which is a '{3}', nor is it a list to "
-                                        + "which the '{3}' can be added",
-                                        propertyMetadata.Prop.Name,
-                                        targetEntry.Metadata.DtoType.FullName,
-                                        propertyMetadata.Prop.PropertyType.FullName,
-                                        metadata.DtoType.FullName));
+                                alreadyEncountered[primaryKey] = current;
+                                if (index == 0)
+                                {
+                                    results.Add((T1) current);
+                                }
+                            }
+
+                            if (index > 0)
+                            {
+                                var targetEntry = map.GetEntryWithMatchingPropertyPreceding(index, entry.Type);
+                                var propertyMetadata = targetEntry.GetPropertyMetadataFor(entry.Type);
+                                var targetObject = objects[targetEntry.Index];
+                                var targetsAlreadyEncountered = alreadyEncounteredDictionaries[targetEntry.Index];
+                                var targetPrimaryKey = targetEntry.Metadata.GetPrimaryKeyValueAsObject(targetObject);
+                                if (targetsAlreadyEncountered.Contains(targetObject))
+                                {
+                                    targetObject = targetsAlreadyEncountered[targetPrimaryKey];
+                                }
+
+                                if (propertyMetadata.Prop.PropertyType == entry.Type)
+                                {
+                                    propertyMetadata.Prop.SetValue(targetObject, current);
+                                }
+                                else if (propertyMetadata.IsEnumerable)
+                                {
+                                    var list = propertyMetadata.Prop.GetValue(targetObject);
+                                    if (null == list)
+                                    {
+                                        list = Activator.CreateInstance(propertyMetadata.Prop.PropertyType);
+                                        propertyMetadata.Prop.SetValue(targetObject, list);
+                                    }
+
+                                    var addMethod = propertyMetadata.Prop.PropertyType.GetMethod("Add");
+                                    if (addMethod == null)
+                                    {
+                                        throw new InvalidOperationException(
+                                            string.Format(
+                                                "The type '{0}' of property '{1}' on '{2}' does not implement an "
+                                                + "Add(object) method so objects of type '{3}' cannot be added to it.",
+                                                propertyMetadata.Prop.PropertyType.FullName,
+                                                propertyMetadata.Prop.Name,
+                                                targetEntry.Metadata.DtoType.FullName,
+                                                metadata.DtoType.FullName));
+                                    }
+
+                                    addMethod.Invoke(list, new [] {current});
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException(
+                                        string.Format(
+                                            "The property '{0}' on '{1}' is of type '{2}', which does not match "
+                                            + "the type of value to be set, which is a '{3}', nor is it a list to "
+                                            + "which the '{3}' can be added",
+                                            propertyMetadata.Prop.Name,
+                                            targetEntry.Metadata.DtoType.FullName,
+                                            propertyMetadata.Prop.PropertyType.FullName,
+                                            metadata.DtoType.FullName));
+                                }
                             }
                         }
-                    }
-                    return true;
-                },
-                splitOn: query.SplitOn,
-                param: parameters);
+                        return true;
+                    },
+                    splitOn: query.SplitOn,
+                    param: parameters);
 
-            return results;
+                return results;
+            }
+            catch (SqlException se)
+            {
+                throw new AnnotatedSqlException(se, query.Sql, query.SplitOn, parameters);
+            }
         }
 
         private static IList<Hashtable> CreateAlreadyEncounteredDictionaries(int count)

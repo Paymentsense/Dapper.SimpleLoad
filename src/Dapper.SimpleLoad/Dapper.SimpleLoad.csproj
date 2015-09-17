@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnnotatedSqlException.cs" />
     <Compile Include="DummyObjectCache.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="Impl\Query.cs" />
