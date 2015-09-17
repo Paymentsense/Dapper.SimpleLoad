@@ -16,13 +16,23 @@ namespace Dapper.SimpleLoad.Impl
             TypePropertyMap map,
             string [] aliases,
             string whereClauseExpression,
-            object parameters)
+            object parameters,
+            int desiredNumberOfResults)
         {
             var query = new Query();
             var selectListBuff = new StringBuilder();
             var fromAndJoinsBuff = new StringBuilder();
             var whereConditionBuff = new StringBuilder();
             var splitOn = new StringBuilder();
+
+            if (desiredNumberOfResults > 0)
+            {
+                //  I wouldn't normally do this with a non-parameterised value but you can't
+                //  do SQL injection just using a positive integer.
+                selectListBuff.Append("TOP (");
+                selectListBuff.Append(desiredNumberOfResults);
+                selectListBuff.Append(") ");
+            }
 
             for (int index = 0, size = map.Count; index < size; ++index)
             {
