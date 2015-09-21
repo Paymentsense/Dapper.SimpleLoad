@@ -18,6 +18,84 @@ namespace Dapper.SimpleLoad
     {
         private class DontMap {}
 
+        public static IList<T1> CustomQuery<T1>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters)
+        {
+            return CustomQuery<T1, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, completeParameterisedSqlQuery, parameters, null);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1, T2, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, completeParameterisedSqlQuery, parameters, splitOn);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2, T3>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1, T2, T3, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, completeParameterisedSqlQuery, parameters, splitOn);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2, T3, T4>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1, T2, T3, T4, DontMap, DontMap, DontMap, DontMap>(connection, completeParameterisedSqlQuery, parameters, splitOn);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2, T3, T4, T5>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1, T2, T3, T4, T5, DontMap, DontMap, DontMap>(connection, completeParameterisedSqlQuery, parameters, splitOn);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2, T3, T4, T5, T6>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1, T2, T3, T4, T5, T6, DontMap, DontMap>(connection, completeParameterisedSqlQuery, parameters, splitOn);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2, T3, T4, T5, T6, T7>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1, T2, T3, T4, T5, T6, T7, DontMap>(connection, completeParameterisedSqlQuery, parameters, splitOn);
+        }
+
+        public static IList<T1> CustomQuery<T1, T2, T3, T4, T5, T6, T7, T8>(
+            this IDbConnection connection, string completeParameterisedSqlQuery, object parameters, string splitOn)
+        {
+            return CustomQuery<T1>(
+                connection,
+                new []
+                {
+                    typeof(T2),
+                    typeof(T3),
+                    typeof(T4),
+                    typeof(T5),
+                    typeof(T6),
+                    typeof(T7),
+                    typeof(T8)
+                },
+                completeParameterisedSqlQuery,
+                parameters);
+        }
+
+        public static IList<T1> CustomQuery<T1>(
+            this IDbConnection connection, Type [] additionalTypes, string completeParameterisedSqlQuery, object parameters, string splitOn = null)
+        {
+            var types = BuildAndCheckTypeList<T1>(additionalTypes);
+            var map = new TypePropertyMap(SimpleSaveExtensions.MetadataCache, types);
+            return QueryInternal<T1>(
+                connection,
+                types,
+                parameters,
+                new Query
+                {
+                    Sql = completeParameterisedSqlQuery,
+                    SplitOn = splitOn
+                },
+                map);
+        }
+
         public static IList<T1> AutoQuery<T1>(
             this IDbConnection connection, object parameters, int desiredNumberOfResults = 0)
         {
@@ -150,21 +228,31 @@ namespace Dapper.SimpleLoad
         public static IList<T1> AutoQuery<T1>(
             this IDbConnection connection, Type[] additionalTypes, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            var types = new List<Type>();
-            types.Add(typeof(T1));
-            types.AddRange(additionalTypes.TakeWhile(type => type != typeof (DontMap)));
-
-            CheckTypes(types);
+            var types = BuildAndCheckTypeList<T1>(additionalTypes);
             CheckTableAliases(types, tableAliases, whereClauseExpression);
-
             return AutoQuery<T1>(connection, types, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
-        private static IList<T1> AutoQuery<T1>(IDbConnection connection, List<Type> types, string[] tableAliases,
+        private static IList<Type> BuildAndCheckTypeList<T1>(Type [] additionalTypes)
+        {
+            var types = new List<Type>();
+            types.Add(typeof(T1));
+            types.AddRange(additionalTypes.TakeWhile(type => type != typeof (DontMap)));
+            CheckTypes(types);
+            return types;
+        }
+
+        private static IList<T1> AutoQuery<T1>(IDbConnection connection, IList<Type> types, string[] tableAliases,
             string whereClauseExpression, object parameters, int desiredNumberOfResults)
         {
             var map = new TypePropertyMap(SimpleSaveExtensions.MetadataCache, types);
             var query = QueryBuilder.BuildQuery(map, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
+            return QueryInternal<T1>(connection, types, parameters, query, map);
+        }
+
+        private static IList<T1> QueryInternal<T1>(IDbConnection connection, IList<Type> types, object parameters, IQuery query,
+            TypePropertyMap map)
+        {
             var alreadyEncounteredDictionaries = CreateAlreadyEncounteredDictionaries(types.Count);
             try
             {
@@ -233,7 +321,7 @@ namespace Dapper.SimpleLoad
                                                 metadata.DtoType.FullName));
                                     }
 
-                                    addMethod.Invoke(list, new [] {current});
+                                    addMethod.Invoke(list, new[] {current});
                                 }
                                 else
                                 {
