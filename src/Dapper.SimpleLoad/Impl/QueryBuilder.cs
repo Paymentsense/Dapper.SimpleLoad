@@ -54,10 +54,10 @@ namespace Dapper.SimpleLoad.Impl
                     splitOn.Append(firstColumn);
                 }
 
-                var table = metadata.GetAttribute<TableAttribute>();
-
                 if (index == 0)
                 {
+                    var table = metadata.GetAttribute<TableAttribute>();
+
                     fromAndJoinsBuff.Append("FROM ");
                     AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
 
@@ -73,10 +73,7 @@ namespace Dapper.SimpleLoad.Impl
                 }
                 else
                 {
-                    fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
-                    AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
-
-                    AppendJoinCondition(map, index, entry, fromAndJoinsBuff, metadata, aliases);
+                    AppendJoin(map, index, entry, alias, fromAndJoinsBuff, metadata, aliases);
                 }
             }
 
@@ -87,16 +84,14 @@ namespace Dapper.SimpleLoad.Impl
             return query;
         }
 
-        private static void AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, TableAttribute table, string alias)
-        {
-            fromAndJoinsBuff.Append(table.SchemaQualifiedTableName);
-            fromAndJoinsBuff.Append(" AS ");
-            fromAndJoinsBuff.Append(alias);
-            fromAndJoinsBuff.Append(Environment.NewLine);
-        }
-
-        private static void AppendJoinCondition(TypePropertyMap map, int index, TypePropertyMapEntry entry,
-            StringBuilder fromAndJoinsBuff, DtoMetadata metadata, string [] aliases)
+        private static void AppendJoin(
+            TypePropertyMap map,
+            int index,
+            TypePropertyMapEntry entry,
+            string aliasForCurrentTable,
+            StringBuilder fromAndJoinsBuff,
+            DtoMetadata metadata,
+            string [] aliases)
         {
             var target = map.GetEntryWithMatchingPropertyPreceding(index, entry.Type);
             if (target == null)
@@ -111,33 +106,12 @@ namespace Dapper.SimpleLoad.Impl
                         entry.Type));
             }
 
-            //  TODO: this is a bit naive for dealing with all the different relationship types
-            //  the referenced PK might actually be on the parent object with the FK in the child.
-            //  What about when the property is a collection that just has a [Column] attribute?
-            //  This is definitely going Pete Tong.
-
             var targetProperty = target.GetPropertyMetadataFor(entry.Type);
 
-            fromAndJoinsBuff.Append("    ON ");
-            if (targetProperty.HasAttribute<OneToOneAttribute>() && string.IsNullOrEmpty(targetProperty.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn)
-                || targetProperty.HasAttribute<ManyToOneAttribute>())
+            if (targetProperty.HasAttribute<ManyToManyAttribute>())
             {
-                //  Covers situation where foreign key column is on the target table
-                AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
-                fromAndJoinsBuff.Append(" = ");
-                AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
-            }
-            else if (targetProperty.HasAttribute<OneToOneAttribute>() || targetProperty.HasAttribute<OneToManyAttribute>())
-            {
-                //  Covers situation where foreign key column is on the source table
-                AppendJoinConditionArgument(entry, fromAndJoinsBuff, entry.GetPropertyMetadataFor(target.Type), aliases);
-                fromAndJoinsBuff.Append(" = ");
-                AppendJoinConditionArgument(target, fromAndJoinsBuff, target.Metadata.PrimaryKey, aliases);
-            }
-            else if (targetProperty.HasAttribute<ManyToManyAttribute>())
-            {
-                //  TODO: since this indicates a bug, should it really be an InvalidOperationException?
-                //  Maybe NotSupportedException instead?
+                //  TODO: property many to many support instead of just throwing.
+
                 throw new InvalidOperationException(
                     string.Format(
                         "Unable to generate JOIN condition between types '{0}' and '{1}' because the property '{2}' on '{1}' "
@@ -149,16 +123,48 @@ namespace Dapper.SimpleLoad.Impl
             }
             else
             {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Unable to generate JOIN condition between types '{0}' and '{1}' because the property '{2}' on '{1}' "
-                        + "is not decorated with an attribute indicating its cardinality. Please add a [OneToOne], [OneToMany] "
-                        + "[ManyToOne], or [ManyToMany] decoration, as appropriate.",
-                        metadata.DtoType,
-                        target.Type,
-                        targetProperty.Prop.Name));
-            }
+                fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
+                var table = metadata.GetAttribute<TableAttribute>();
 
+                AppendTableNameAndAlias(fromAndJoinsBuff, table, aliasForCurrentTable);
+
+                fromAndJoinsBuff.Append("    ON ");
+                if (targetProperty.HasAttribute<OneToOneAttribute>() && string.IsNullOrEmpty(targetProperty.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn)
+                    || targetProperty.HasAttribute<ManyToOneAttribute>())
+                {
+                    //  Covers situation where foreign key column is on the target table
+                    AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
+                    fromAndJoinsBuff.Append(" = ");
+                    AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
+                }
+                else if (targetProperty.HasAttribute<OneToOneAttribute>() || targetProperty.HasAttribute<OneToManyAttribute>())
+                {
+                    //  Covers situation where foreign key column is on the source table
+                    AppendJoinConditionArgument(entry, fromAndJoinsBuff, entry.GetPropertyMetadataFor(target.Type), aliases);
+                    fromAndJoinsBuff.Append(" = ");
+                    AppendJoinConditionArgument(target, fromAndJoinsBuff, target.Metadata.PrimaryKey, aliases);
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            "Unable to generate JOIN condition between types '{0}' and '{1}' because the property '{2}' on '{1}' "
+                            + "is not decorated with an attribute indicating its cardinality. Please add a [OneToOne], [OneToMany] "
+                            + "[ManyToOne], or [ManyToMany] decoration, as appropriate.",
+                            metadata.DtoType,
+                            target.Type,
+                            targetProperty.Prop.Name));
+                }
+
+                fromAndJoinsBuff.Append(Environment.NewLine);
+            }
+        }
+
+        private static void AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, TableAttribute table, string alias)
+        {
+            fromAndJoinsBuff.Append(table.SchemaQualifiedTableName);
+            fromAndJoinsBuff.Append(" AS ");
+            fromAndJoinsBuff.Append(alias);
             fromAndJoinsBuff.Append(Environment.NewLine);
         }
 
