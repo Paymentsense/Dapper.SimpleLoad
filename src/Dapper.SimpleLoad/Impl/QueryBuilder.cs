@@ -112,14 +112,34 @@ namespace Dapper.SimpleLoad.Impl
             }
 
             //  TODO: this is a bit naive for dealing with all the different relationship types
-            //  the referenced PK might actually be on the parent object with the FK in the child
+            //  the referenced PK might actually be on the parent object with the FK in the child.
             //  What about when the property is a collection that just has a [Column] attribute?
             //  This is definitely going Pete Tong.
+
+            var targetProperty = target.GetPropertyMetadataFor(entry.Type);
+
+            if (targetProperty.HasAttribute<OneToOneAttribute>() && string.IsNullOrEmpty(targetProperty.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn)
+                || targetProperty.HasAttribute<ManyToOneAttribute>())
+            {
+                //  Covers situation where foreign key column is on the target table
+            }
+            else if (targetProperty.HasAttribute<OneToOneAttribute>() || targetProperty.HasAttribute<OneToManyAttribute>())
+            {
+                //  Covers situation where foreign key column is on the source table
+            }
+            else if (targetProperty.HasAttribute<ManyToManyAttribute>())
+            {
+                //  TODO: throw because we can't handle that here - we need to generate an extra JOIN that goes through the link table
+            }
+            else
+            {
+                //  TODO: throw because there's no indication of cardinality on the target property
+            }
 
             fromAndJoinsBuff.Append("    ON ");
             AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
             fromAndJoinsBuff.Append(" = ");
-            AppendJoinConditionArgument(target, fromAndJoinsBuff, target.GetPropertyMetadataFor(entry.Type), aliases);
+            AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
             fromAndJoinsBuff.Append(Environment.NewLine);
         }
 
