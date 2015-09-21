@@ -62,5 +62,25 @@ namespace Dapper.SimpleLoad.Tests
                 //  Don't care - connection not open.
             }
         }
+
+        [Test]
+        public void generates_correct_query_for_many_to_many_relationship()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    var results = connection.AutoQuery<UserWithDepartmentsDto, SimpleDepartmentDto>(
+                        new
+                        {
+                            UserKey = 1
+                        });
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                //  Don't care - connection not open.
+            }
+        }
     }
 }

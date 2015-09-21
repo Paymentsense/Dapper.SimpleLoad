@@ -82,9 +82,11 @@
     <Compile Include="RealisticDtos\RoleDto.cs" />
     <Compile Include="RealisticDtos\SalutationDto.cs" />
     <Compile Include="RealisticDtos\SamplePopulatedDtos.cs" />
+    <Compile Include="RealisticDtos\SimpleDepartmentDto.cs" />
     <Compile Include="RealisticDtos\TeamDto.cs" />
     <Compile Include="RealisticDtos\UserDto.cs" />
     <Compile Include="RealisticDtos\UserStatusEnum.cs" />
+    <Compile Include="RealisticDtos\UserWithDepartmentsDto.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

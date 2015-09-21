@@ -28,35 +28,11 @@ namespace Dapper.SimpleLoad.Impl
                 _entries.Add(new TypePropertyMapEntry(
                     cache,
                     type,
-                    GenerateAliasFor(type, index),
+                    AliasGenerator.GenerateAliasFor(type, index),
                     index,
                     typeSet));
                 ++index;
             }
-        }
-
-        private string GenerateAliasFor(Type type, int count)
-        {
-            return string.Format(
-                "a{0}_{1}",
-                count,
-                GenerateAliasFor(type));
-        }
-
-        private string GenerateAliasFor(Type type)
-        {
-            var buff = new StringBuilder();
-            foreach (char ch in type.Name)
-            {
-                if (char.IsLetter(ch))
-                {
-                    if (buff.Length == 0 || char.IsUpper(ch))
-                    {
-                        buff.Append(char.ToLower(ch));
-                    }
-                }
-            }
-            return buff.ToString();
         }
 
         public TypePropertyMapEntry this[int index] { get { return _entries[index]; } }

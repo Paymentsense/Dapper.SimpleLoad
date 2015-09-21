@@ -25,6 +25,7 @@ namespace Dapper.SimpleLoad.Impl
             Index = index;
             foreach (var property in Metadata.Properties)
             {
+                var key = property.Prop.PropertyType;
                 if (property.IsEnumerable)
                 {
                     var genericArguments = property.Prop.PropertyType.GenericTypeArguments;
@@ -34,13 +35,15 @@ namespace Dapper.SimpleLoad.Impl
                     {
                         continue;
                     }
+
+                    key = genericArguments[0];
                 }
-                else if (!typesWeCareAbout.Contains(property.Prop.PropertyType))
+                else if (!typesWeCareAbout.Contains(key))
                 {
                     continue;
                 }
 
-                _typesToPropertyMetadata[property.Prop.PropertyType] = property;
+                _typesToPropertyMetadata[key] = property;
             }
         }
 

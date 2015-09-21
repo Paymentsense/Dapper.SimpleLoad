@@ -148,7 +148,7 @@ namespace Dapper.SimpleLoad
         public static IList<T1> AutoQuery<T1, T2, T3, T4, T5, T6, T7, T8>(
             this IDbConnection connection, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1>(
+            return AutoQuery<T1, T2, T3, T4, T5, T6, T7, T8>(
                 connection,
                 null,
                 null,
@@ -246,7 +246,7 @@ namespace Dapper.SimpleLoad
             string whereClauseExpression, object parameters, int desiredNumberOfResults)
         {
             var map = new TypePropertyMap(SimpleSaveExtensions.MetadataCache, types);
-            var query = QueryBuilder.BuildQuery(map, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
+            var query = new QueryBuilder().BuildQuery(map, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
             return QueryInternal<T1>(connection, types, parameters, query, map);
         }
 

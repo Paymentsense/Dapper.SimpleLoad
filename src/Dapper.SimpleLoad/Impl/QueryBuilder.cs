@@ -6,13 +6,14 @@ using Dapper.SimpleSave;
 
 namespace Dapper.SimpleLoad.Impl
 {
-    public static class QueryBuilder
+    public class QueryBuilder
     {
+        private int _linkTableAliasIndex;
         //  TODO: You are DEFINITELY going to want to cache these bad boys!
 
         //  TODO: split on columns - make sure these are actually the PK columns otherwise it'll all go tits up (really they need to be unique to the object concerned or, due to Dapper limitations, it'll all go tits up, but there's nothing you can do about that in SimpleLoad)
 
-        public static IQuery BuildQuery(
+        public IQuery BuildQuery(
             TypePropertyMap map,
             string [] aliases,
             string whereClauseExpression,
@@ -78,13 +79,12 @@ namespace Dapper.SimpleLoad.Impl
             }
 
             query.Sql = string.Format(@"SELECT {0}
-{1}
-{2};", selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+{1}{2};", selectListBuff, fromAndJoinsBuff, whereConditionBuff);
             query.SplitOn = splitOn.ToString();
             return query;
         }
 
-        private static void AppendJoin(
+        private void AppendJoin(
             TypePropertyMap map,
             int index,
             TypePropertyMapEntry entry,
@@ -106,24 +106,36 @@ namespace Dapper.SimpleLoad.Impl
                         entry.Type));
             }
 
+            fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
+
             var targetProperty = target.GetPropertyMetadataFor(entry.Type);
 
             if (targetProperty.HasAttribute<ManyToManyAttribute>())
             {
-                //  TODO: property many to many support instead of just throwing.
+                var manyToMany = targetProperty.GetAttribute<ManyToManyAttribute>();
+                var linkAlias = AppendTableNameAndAlias(fromAndJoinsBuff, manyToMany.SchemaQualifiedLinkTableName);
 
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Unable to generate JOIN condition between types '{0}' and '{1}' because the property '{2}' on '{1}' "
-                        + "is decorated with a [ManyToMany] attribute. This is fine but it should have been picked up and handled "
-                        + "before. The fact that is hasn't been indicates a bug.",
-                        metadata.DtoType,
-                        target.Type,
-                        targetProperty.Prop.Name));
+                fromAndJoinsBuff.Append("    ON ");
+                AppendJoinConditionArgument(target, fromAndJoinsBuff, target.Metadata.PrimaryKey, aliases);
+                fromAndJoinsBuff.Append(" = ");
+                AppendJoinConditionArgument(fromAndJoinsBuff, target.Metadata.PrimaryKey, linkAlias);
+
+                fromAndJoinsBuff.Append(Environment.NewLine);
+
+                fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
+
+                var table = metadata.GetAttribute<TableAttribute>();
+                AppendTableNameAndAlias(fromAndJoinsBuff, table, aliasForCurrentTable);
+
+                fromAndJoinsBuff.Append("    ON ");
+                AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
+                fromAndJoinsBuff.Append(" = ");
+                AppendJoinConditionArgument(fromAndJoinsBuff, metadata.PrimaryKey, linkAlias);
+
+                fromAndJoinsBuff.Append(Environment.NewLine);
             }
             else
             {
-                fromAndJoinsBuff.Append("LEFT OUTER JOIN ");
                 var table = metadata.GetAttribute<TableAttribute>();
 
                 AppendTableNameAndAlias(fromAndJoinsBuff, table, aliasForCurrentTable);
@@ -160,9 +172,25 @@ namespace Dapper.SimpleLoad.Impl
             }
         }
 
-        private static void AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, TableAttribute table, string alias)
+        private void AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, TableAttribute table, string alias)
         {
-            fromAndJoinsBuff.Append(table.SchemaQualifiedTableName);
+            var schemaQualifiedTableName = table.SchemaQualifiedTableName;
+            AppendTableNameAndAlias(fromAndJoinsBuff, schemaQualifiedTableName, alias);
+        }
+
+        private string AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, string schemaQualifiedTableName)
+        {
+            var linkAlias = AliasGenerator.GenerateAliasFor(schemaQualifiedTableName, _linkTableAliasIndex++);
+            AppendTableNameAndAlias(
+                fromAndJoinsBuff,
+                schemaQualifiedTableName,
+                linkAlias);
+            return linkAlias;
+        }
+
+        private static void AppendTableNameAndAlias(StringBuilder fromAndJoinsBuff, string schemaQualifiedTableName, string alias)
+        {
+            fromAndJoinsBuff.Append(schemaQualifiedTableName);
             fromAndJoinsBuff.Append(" AS ");
             fromAndJoinsBuff.Append(alias);
             fromAndJoinsBuff.Append(Environment.NewLine);
@@ -186,6 +214,11 @@ namespace Dapper.SimpleLoad.Impl
                         entry.Type));
             }
             var alias = aliases == null ? entry.Alias : aliases[entry.Index];
+            AppendJoinConditionArgument(fromAndJoinsBuff, property, alias);
+        }
+
+        private static void AppendJoinConditionArgument(StringBuilder fromAndJoinsBuff, PropertyMetadata property, string alias)
+        {
             fromAndJoinsBuff.Append(alias);
             fromAndJoinsBuff.Append(".[");
             fromAndJoinsBuff.Append(property.ColumnName);
