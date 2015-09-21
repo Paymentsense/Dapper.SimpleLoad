@@ -118,28 +118,47 @@ namespace Dapper.SimpleLoad.Impl
 
             var targetProperty = target.GetPropertyMetadataFor(entry.Type);
 
+            fromAndJoinsBuff.Append("    ON ");
             if (targetProperty.HasAttribute<OneToOneAttribute>() && string.IsNullOrEmpty(targetProperty.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn)
                 || targetProperty.HasAttribute<ManyToOneAttribute>())
             {
                 //  Covers situation where foreign key column is on the target table
+                AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
+                fromAndJoinsBuff.Append(" = ");
+                AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
             }
             else if (targetProperty.HasAttribute<OneToOneAttribute>() || targetProperty.HasAttribute<OneToManyAttribute>())
             {
                 //  Covers situation where foreign key column is on the source table
+                AppendJoinConditionArgument(entry, fromAndJoinsBuff, entry.GetPropertyMetadataFor(target.Type), aliases);
+                fromAndJoinsBuff.Append(" = ");
+                AppendJoinConditionArgument(target, fromAndJoinsBuff, target.Metadata.PrimaryKey, aliases);
             }
             else if (targetProperty.HasAttribute<ManyToManyAttribute>())
             {
-                //  TODO: throw because we can't handle that here - we need to generate an extra JOIN that goes through the link table
+                //  TODO: since this indicates a bug, should it really be an InvalidOperationException?
+                //  Maybe NotSupportedException instead?
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Unable to generate JOIN condition between types '{0}' and '{1}' because the property '{2}' on '{1}' "
+                        + "is decorated with a [ManyToMany] attribute. This is fine but it should have been picked up and handled "
+                        + "before. The fact that is hasn't been indicates a bug.",
+                        metadata.DtoType,
+                        target.Type,
+                        targetProperty.Prop.Name));
             }
             else
             {
-                //  TODO: throw because there's no indication of cardinality on the target property
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Unable to generate JOIN condition between types '{0}' and '{1}' because the property '{2}' on '{1}' "
+                        + "is not decorated with an attribute indicating its cardinality. Please add a [OneToOne], [OneToMany] "
+                        + "[ManyToOne], or [ManyToMany] decoration, as appropriate.",
+                        metadata.DtoType,
+                        target.Type,
+                        targetProperty.Prop.Name));
             }
 
-            fromAndJoinsBuff.Append("    ON ");
-            AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
-            fromAndJoinsBuff.Append(" = ");
-            AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
             fromAndJoinsBuff.Append(Environment.NewLine);
         }
 
