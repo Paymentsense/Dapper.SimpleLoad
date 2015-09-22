@@ -13,13 +13,12 @@ namespace Dapper.SimpleLoad
     public class AnnotatedSqlException : Exception, ISerializable
     {
         public AnnotatedSqlException(SqlException source, string sql, string splitOn, object parameters) : base(
-            string.Format(
-                "{0}"
+                source.Message
                 + Environment.NewLine
                 + "For SQL: " + sql
                 + Environment.NewLine
                 + "Split On: " + splitOn
-                + "Parameters: " + JsonConvert.SerializeObject(parameters)),
+                + "Parameters: " + JsonConvert.SerializeObject(parameters),
             source)
         {
             Sql = sql;
