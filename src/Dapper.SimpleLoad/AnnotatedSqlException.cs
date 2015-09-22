@@ -18,6 +18,7 @@ namespace Dapper.SimpleLoad
                 + "For SQL: " + sql
                 + Environment.NewLine
                 + "Split On: " + splitOn
+                + Environment.NewLine
                 + "Parameters: " + JsonConvert.SerializeObject(parameters),
             source)
         {
