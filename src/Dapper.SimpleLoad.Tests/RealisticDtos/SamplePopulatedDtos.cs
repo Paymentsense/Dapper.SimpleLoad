@@ -25,7 +25,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
 
         public static readonly MobilePhoneNumberDto MobileNumberDto = new MobilePhoneNumberDto
         {
-            PhoneNumberKey = 1,
+            //PhoneNumberKey = 1,
             PhoneGuid = new Guid("DDE36C15-F0AA-4D94-919F-D714A8366892"),
             PhoneNumber = "777 1234567",
             Country = TestCountry
@@ -33,7 +33,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
 
         public static readonly MobilePhoneNumberDto MobileNumberDto2 = new MobilePhoneNumberDto
         {
-            PhoneNumberKey = 1,
+            //PhoneNumberKey = 1,
             PhoneGuid = new Guid("DDE36C15-F0AA-4D94-919F-D714A8366892"),
             PhoneNumber = "543254",
             Country = TestCountry
@@ -41,7 +41,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
 
         public static readonly PhoneNumberDto OfficeNumberDto = new PhoneNumberDto
         {
-            PhoneNumberKey = 4,
+            //PhoneNumberKey = 4,
             PhoneGuid = new Guid("DDE36C15-F0AA-4D94-919F-D714A8366892"),
             PhoneNumber = "02075555555",
             Country = TestCountry

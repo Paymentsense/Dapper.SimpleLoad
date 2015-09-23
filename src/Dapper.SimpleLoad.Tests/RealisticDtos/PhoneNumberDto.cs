@@ -6,9 +6,9 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
     [Table("[gen].[PHONE_NUMBER_MST]")]
     public class PhoneNumberDto
     {
-        [PrimaryKey]
-        public int? PhoneNumberKey { get; set; }
+        //public int? PhoneNumberKey { get; set; }
 
+        [PrimaryKey]
         public Guid? PhoneGuid { get; set; }
 
         [ManyToOne]

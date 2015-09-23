@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Dapper.SimpleSave;
 
 namespace Dapper.SimpleLoad.Impl
@@ -46,6 +47,8 @@ namespace Dapper.SimpleLoad.Impl
                 if (buffer.Length > 0 || iNeedALeadingComma)
                 {
                     buffer.Append(", ");
+                    buffer.Append(Environment.NewLine);
+                    buffer.Append("    ");
                 }
 
                 if (!string.IsNullOrEmpty(tableAlias))

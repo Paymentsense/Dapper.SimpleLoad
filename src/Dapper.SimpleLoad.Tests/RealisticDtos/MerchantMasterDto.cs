@@ -58,6 +58,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
         public IList<ContactMasterDto> Contacts { get; set; }
 
         [SimpleSaveIgnore]
+        [SimpleLoadIgnore]
         public string BusinessCategory { get; set; }
 
         [OneToOne]

@@ -304,7 +304,17 @@ namespace Dapper.SimpleLoad
                                     var list = propertyMetadata.Prop.GetValue(targetObject);
                                     if (null == list)
                                     {
-                                        list = Activator.CreateInstance(propertyMetadata.Prop.PropertyType);
+                                        var genericArgs = propertyMetadata.Prop.PropertyType.GenericTypeArguments;
+                                        if (genericArgs != null && genericArgs.Length > 0)
+                                        {
+                                            var genericList = typeof (List<>);
+                                            var instantiable = genericList.MakeGenericType(genericArgs);
+                                            list = Activator.CreateInstance(instantiable);
+                                        }
+                                        else
+                                        {
+                                            list = new ArrayList();
+                                        }
                                         propertyMetadata.Prop.SetValue(targetObject, list);
                                     }
 
