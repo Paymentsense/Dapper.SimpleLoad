@@ -266,6 +266,10 @@ namespace Dapper.SimpleLoad
                         for (int index = 0, size = objects.Length; index < size; ++index)
                         {
                             var current = objects[index];
+                            if (current == null)
+                            {
+                                continue;
+                            }
                             var alreadyEncountered = alreadyEncounteredDictionaries[index];
                             var entry = map[index];
                             var metadata = entry.Metadata;
