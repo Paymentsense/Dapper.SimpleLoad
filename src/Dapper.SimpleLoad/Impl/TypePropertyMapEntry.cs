@@ -23,8 +23,13 @@ namespace Dapper.SimpleLoad.Impl
             Metadata = cache.GetMetadataFor(type);
             Alias = alias;
             Index = index;
-            foreach (var property in Metadata.Properties)
+            foreach (var property in Metadata.AllProperties)
             {
+                if (property.HasAttribute<SimpleLoadIgnoreAttribute>())
+                {
+                    continue;
+                }
+
                 var key = property.Prop.PropertyType;
                 if (property.IsEnumerable)
                 {

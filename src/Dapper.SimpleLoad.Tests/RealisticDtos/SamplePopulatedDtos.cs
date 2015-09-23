@@ -23,7 +23,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
             }
         };
 
-        public static readonly PhoneNumberDto MobileNumberDto = new PhoneNumberDto
+        public static readonly MobilePhoneNumberDto MobileNumberDto = new MobilePhoneNumberDto
         {
             PhoneNumberKey = 1,
             PhoneGuid = new Guid("DDE36C15-F0AA-4D94-919F-D714A8366892"),
@@ -31,7 +31,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
             Country = TestCountry
         };
 
-        public static readonly PhoneNumberDto MobileNumberDto2 = new PhoneNumberDto
+        public static readonly MobilePhoneNumberDto MobileNumberDto2 = new MobilePhoneNumberDto
         {
             PhoneNumberKey = 1,
             PhoneGuid = new Guid("DDE36C15-F0AA-4D94-919F-D714A8366892"),

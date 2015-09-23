@@ -82,5 +82,42 @@ namespace Dapper.SimpleLoad.Tests
                 //  Don't care - connection not open.
             }
         }
+
+        [Test]
+        public void generates_correct_query_for_complex_merchant_dto()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    var results = connection.AutoQuery<MerchantMasterDto>(
+                        new[]
+                        {
+                            typeof (PhoneNumberDto),
+                                typeof (CountryDto),
+                            typeof (FaxNumberDto),
+                                typeof (CountryDto),
+                            typeof (ContactMasterDto),
+                                typeof (EmailAddressMasterDto),
+                                typeof (PhoneNumberDto),
+                                    typeof (CountryDto),
+                                typeof (MobilePhoneNumberDto),
+                                    typeof (CountryDto),
+                                typeof (SalutationDto),
+                            typeof (MerchantDetailsDto),
+                                typeof (TerminalModelDto),
+                            typeof (AddressDto),
+                                typeof (CountyDto),
+                                typeof (PostCodeDetailsDto),
+                                typeof (PostalDistrictNameDto)
+                        },
+                        new {MerchantGuid = Guid.Empty}).FirstOrDefault();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                //  Don't care - connection not open.
+            }
+        }
     }
 }

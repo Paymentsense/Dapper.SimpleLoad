@@ -30,4 +30,12 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
             return string.Format("+{0} {1}", Country.TelephoneCountryCode, PhoneNumber);
         }
     }
+
+    public class MobilePhoneNumberDto : PhoneNumberDto
+    {
+    }
+
+    public class FaxNumberDto : PhoneNumberDto
+    {
+    }
 }

@@ -29,12 +29,13 @@ namespace Dapper.SimpleLoad.Impl
             string tableAlias = null)
         {
             string firstColumn = null;
-            foreach (var property in metadata.Properties)
+            foreach (var property in metadata.AllProperties)
             {
                 //  At the moment this isn't sophisticated enough to drill down through tables.
                 //  We might want to add this in future but, given it's currently only used to retrieve
                 //  data to populate lists and dropdowns it seems unnecessary.
-                if (property.HasAttribute<OneToManyAttribute>()
+                if (!property.Prop.CanWrite
+                    || property.HasAttribute<OneToManyAttribute>()
                     || property.HasAttribute<ManyToManyAttribute>()
                     || property.HasAttribute<SimpleLoadIgnoreAttribute>()
                     || property.IsEnumerable)

@@ -210,7 +210,9 @@ namespace Dapper.SimpleLoad.Impl
                         + "be found on '{0}'. This might be because you haven't marked a property with "
                         + "the [PrimaryKey] attribute from Dapper.SimpleSave, or because no matching "
                         + "target property can be found on the target object, although this seems a bit "
-                        + "unlikely.",
+                        + "unlikely. Also bear in mind that commparison with property names here is "
+                        + "case-sensitive so this failure may be caused by a difference in casing between, "
+                        + "say, the property name, and any column name specified in a [Column] attribute.",
                         entry.Type));
             }
             var alias = aliases == null ? entry.Alias : aliases[entry.Index];

@@ -13,7 +13,10 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
         public Guid UpdateSessionGuid { get; set; }
 
         public int SalutationKey { get; set; }
+
         [SimpleSaveIgnore]
+        [ManyToOne]
+        [Column("SalutationKey")]
         public SalutationDto Salutation { get; set; }
 
         public string FirstName { get; set; }
@@ -27,7 +30,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
         public PhoneNumberDto MainPhone { get; set; }
 
         [ManyToOne("PhoneGUID"), Column("MobilePhoneGuid")]
-        public PhoneNumberDto MobilePhone { get; set; }
+        public MobilePhoneNumberDto MobilePhone { get; set; }
 
         public bool IsPrimaryContact { get; set; }
 
