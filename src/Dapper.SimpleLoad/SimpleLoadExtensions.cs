@@ -301,6 +301,7 @@ namespace Dapper.SimpleLoad
                                 }
                                 else if (propertyMetadata.IsEnumerable)
                                 {
+                                    MethodInfo addMethod;
                                     var list = propertyMetadata.Prop.GetValue(targetObject);
                                     if (null == list)
                                     {
@@ -310,15 +311,20 @@ namespace Dapper.SimpleLoad
                                             var genericList = typeof (List<>);
                                             var instantiable = genericList.MakeGenericType(genericArgs);
                                             list = Activator.CreateInstance(instantiable);
+                                            addMethod = instantiable.GetMethod("Add");
                                         }
                                         else
                                         {
                                             list = new ArrayList();
+                                            addMethod = typeof (ArrayList).GetMethod("Add");
                                         }
                                         propertyMetadata.Prop.SetValue(targetObject, list);
                                     }
+                                    else
+                                    {
+                                        addMethod = list.GetType().GetMethod("Add");
+                                    }
 
-                                    var addMethod = propertyMetadata.Prop.PropertyType.GetMethod("Add");
                                     if (addMethod == null)
                                     {
                                         throw new InvalidOperationException(
