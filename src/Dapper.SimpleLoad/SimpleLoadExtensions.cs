@@ -306,27 +306,27 @@ namespace Dapper.SimpleLoad
                                 else if (propertyMetadata.IsEnumerable)
                                 {
                                     MethodInfo addMethod;
-                                    var list = propertyMetadata.Prop.GetValue(targetObject);
-                                    if (null == list)
+                                    var collection = propertyMetadata.Prop.GetValue(targetObject);
+                                    if (null == collection)
                                     {
                                         var genericArgs = propertyMetadata.Prop.PropertyType.GenericTypeArguments;
                                         if (genericArgs != null && genericArgs.Length > 0)
                                         {
                                             var genericList = typeof (List<>);
                                             var instantiable = genericList.MakeGenericType(genericArgs);
-                                            list = Activator.CreateInstance(instantiable);
+                                            collection = Activator.CreateInstance(instantiable);
                                             addMethod = instantiable.GetMethod("Add");
                                         }
                                         else
                                         {
-                                            list = new ArrayList();
+                                            collection = new ArrayList();
                                             addMethod = typeof (ArrayList).GetMethod("Add");
                                         }
-                                        propertyMetadata.Prop.SetValue(targetObject, list);
+                                        propertyMetadata.Prop.SetValue(targetObject, collection);
                                     }
                                     else
                                     {
-                                        addMethod = list.GetType().GetMethod("Add");
+                                        addMethod = collection.GetType().GetMethod("Add");
                                     }
 
                                     if (addMethod == null)
@@ -341,7 +341,7 @@ namespace Dapper.SimpleLoad
                                                 metadata.DtoType.FullName));
                                     }
 
-                                    addMethod.Invoke(list, new[] {current});
+                                    addMethod.Invoke(collection, new[] {current});
                                 }
                                 else
                                 {
