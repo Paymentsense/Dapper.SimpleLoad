@@ -73,7 +73,8 @@ namespace Dapper.SimpleLoad.Impl
         {
             return propertyMetadata.IsOneToManyRelationship
                 || propertyMetadata.IsManyToOneRelationship
-                || propertyMetadata.IsOneToOneRelationship;
+                || propertyMetadata.IsOneToOneRelationship
+                || propertyMetadata.IsManyToManyRelationship;
         }
 
         public Type Type { get; private set; }
