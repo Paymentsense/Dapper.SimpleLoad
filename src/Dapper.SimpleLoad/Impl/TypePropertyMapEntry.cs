@@ -45,7 +45,19 @@ namespace Dapper.SimpleLoad.Impl
                 }
                 else if (!typesWeCareAbout.Contains(key))
                 {
-                    continue;
+                    if (property.HasAttribute<ForeignKeyReferenceAttribute>())
+                    {
+                        var foreignKey = property.GetAttribute<ForeignKeyReferenceAttribute>();
+                        key = foreignKey.ReferencedDto;
+                        if (!typesWeCareAbout.Contains(key))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
                 _typesToPropertyMetadata[key] = property;

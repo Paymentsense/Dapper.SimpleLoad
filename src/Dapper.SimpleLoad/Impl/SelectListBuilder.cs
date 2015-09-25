@@ -44,6 +44,12 @@ namespace Dapper.SimpleLoad.Impl
                     continue;
                 }
 
+                if (property.HasAttribute<OneToOneAttribute>()
+                    && !property.IsEnum)
+                {
+                    continue;
+                }
+
                 if (buffer.Length > 0 || iNeedALeadingComma)
                 {
                     buffer.Append(", ");

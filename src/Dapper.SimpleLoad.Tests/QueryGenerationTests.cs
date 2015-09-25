@@ -119,5 +119,35 @@ namespace Dapper.SimpleLoad.Tests
                 //  Don't care - connection not open.
             }
         }
+
+        [Test]
+        public void generates_correct_query_for_complex_application_dto()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    var results = connection.AutoQuery<APPLICATION_MST>(
+                    new[]
+                    {
+                        typeof (LEGAL_INFO_MST),
+                        typeof (SALES_CHANNEL_LNK),
+                        typeof (LOCATION_MST),
+                        typeof (BUSINESS_LEGAL_INFO_LNK),
+                        typeof (SHAREHOLDER_MST),
+                        typeof (PRINCIPAL_MST),
+                        typeof (MERCHANT_MST)
+                    },
+                    new
+                    {
+                        ApplicationGuid = Guid.Empty
+                    }).FirstOrDefault();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                //  Don't care - connection not open
+            }
+        }
     }
 }
