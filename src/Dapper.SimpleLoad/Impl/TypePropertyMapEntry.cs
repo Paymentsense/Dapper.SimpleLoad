@@ -36,7 +36,8 @@ namespace Dapper.SimpleLoad.Impl
                     var genericArguments = property.Prop.PropertyType.GenericTypeArguments;
                     if (genericArguments == null
                         || genericArguments.Length != 1
-                        || !typesWeCareAbout.Contains(genericArguments[0]))
+                        || !typesWeCareAbout.Contains(genericArguments[0])
+                        || !HasCardinalityAttribute(property))
                     {
                         continue;
                     }
@@ -59,9 +60,20 @@ namespace Dapper.SimpleLoad.Impl
                         continue;
                     }
                 }
+                else if (!HasCardinalityAttribute(property) && !property.IsEnum)
+                {
+                    continue;
+                }
 
                 _typesToPropertyMetadata[key] = property;
             }
+        }
+
+        private bool HasCardinalityAttribute(PropertyMetadata propertyMetadata)
+        {
+            return propertyMetadata.IsOneToManyRelationship
+                || propertyMetadata.IsManyToOneRelationship
+                || propertyMetadata.IsOneToOneRelationship;
         }
 
         public Type Type { get; private set; }
