@@ -45,7 +45,7 @@ namespace Dapper.SimpleLoad.Impl
                 }
 
                 if (property.HasAttribute<OneToOneAttribute>()
-                    && !property.IsEnum)
+                    && !string.IsNullOrEmpty(property.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn))
                 {
                     continue;
                 }
