@@ -131,7 +131,6 @@ namespace Dapper.SimpleLoad.Tests
         }
 
         [Test]
-        [Ignore]
         public void generates_correct_query_for_complex_application_dto()
         {
             try

@@ -12,6 +12,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
     {
         [PrimaryKey]
         public Guid? LocationGUID { get; set; }
+        [ForeignKeyReference(typeof(APPLICATION_MST))]
         public Guid ApplicationGUID { get; set; }
         public Guid OpportunityGUID { get; set; }
         public string BusinessName { get; set; }
