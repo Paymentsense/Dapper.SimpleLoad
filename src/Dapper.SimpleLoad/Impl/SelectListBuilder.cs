@@ -68,12 +68,13 @@ namespace Dapper.SimpleLoad.Impl
                 buffer.Append(property.ColumnName);
                 buffer.Append(']');
 
-                var columnAlias = property.ColumnName == property.Prop.Name
-                    ? property.ColumnName
-                    : property.Prop.Name;
+                var columnAlias = property.ColumnName;
 
-                if (columnAlias != property.ColumnName)
+                if (columnAlias != property.Prop.Name
+                    && ! property.HasAttribute<ManyToOneAttribute>()
+                    && ! property.HasAttribute<OneToOneAttribute>())
                 {
+                    columnAlias = property.Prop.Name;
                     buffer.Append(" AS [");
                     buffer.Append(columnAlias);
                     buffer.Append("]");
