@@ -261,7 +261,11 @@ namespace Dapper.SimpleLoad
             {
                 var results = new List<T1>();
 
-                Logger.Info("Executing query:\r\n" + query.Sql);
+                if (Logger.IsInfoEnabled)
+                {
+                    Logger.Info("Executing query:\r\n" + query.Sql);
+                    Logger.Info("Split on:" + query.SplitOn);
+                }
 
                 connection.Query(
                     query.Sql,
