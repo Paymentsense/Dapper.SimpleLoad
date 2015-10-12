@@ -68,9 +68,20 @@ namespace Dapper.SimpleLoad.Impl
                 buffer.Append(property.ColumnName);
                 buffer.Append(']');
 
+                var columnAlias = property.ColumnName == property.Prop.Name
+                    ? property.ColumnName
+                    : property.Prop.Name;
+
+                if (columnAlias != property.ColumnName)
+                {
+                    buffer.Append(" AS [");
+                    buffer.Append(columnAlias);
+                    buffer.Append("]");
+                }
+
                 if (firstColumn == null)
                 {
-                    firstColumn = property.ColumnName;
+                    firstColumn = columnAlias;
                 }
             }
             return firstColumn;
