@@ -11,11 +11,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper.SimpleLoad.Impl;
 using Dapper.SimpleSave;
+using log4net;
 
 namespace Dapper.SimpleLoad
 {
     public static class SimpleLoadExtensions
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof (SimpleLoadExtensions));
+
         private class DontMap {}
 
         public static IList<T1> CustomQuery<T1>(
@@ -257,6 +260,8 @@ namespace Dapper.SimpleLoad
             try
             {
                 var results = new List<T1>();
+
+                Logger.Info("Executing query:\r\n" + query.Sql);
 
                 connection.Query(
                     query.Sql,
