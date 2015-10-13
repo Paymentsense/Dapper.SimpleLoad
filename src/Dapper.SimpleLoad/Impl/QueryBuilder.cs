@@ -239,6 +239,7 @@ namespace Dapper.SimpleLoad.Impl
                             whereConditionBuff,
                             entry,
                             kvp.Key,
+                            kvp.Value,
                             aliases);
                     }
                 }
@@ -253,6 +254,7 @@ namespace Dapper.SimpleLoad.Impl
                             whereConditionBuff,
                             entry,
                             property.Name,
+                            property.GetMethod.Invoke(parameters, new object[0]),
                             aliases);
                     }
                 }
@@ -263,6 +265,7 @@ namespace Dapper.SimpleLoad.Impl
             StringBuilder whereConditionBuff,
             TypePropertyMapEntry entry,
             string parameterName,
+            object parameterValue,
             string [] aliases)
         {
             if (whereConditionBuff.Length == 0)
@@ -277,8 +280,16 @@ namespace Dapper.SimpleLoad.Impl
             whereConditionBuff.Append(alias);
             whereConditionBuff.Append(".[");
             whereConditionBuff.Append(parameterName);
-            whereConditionBuff.Append("] = @");
-            whereConditionBuff.Append(parameterName);
+            whereConditionBuff.Append("] ");
+            if (parameterValue == null)
+            {
+                whereConditionBuff.Append("IS NULL");
+            }
+            else
+            {
+                whereConditionBuff.Append("= @");
+                whereConditionBuff.Append(parameterName);
+            }
             whereConditionBuff.Append(Environment.NewLine);
         }
     }
