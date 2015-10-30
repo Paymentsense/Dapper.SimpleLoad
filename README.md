@@ -6,7 +6,7 @@ Dapper.SimpleLoad simplifies Dapper multi-mapping to load complex objects from a
 
 ##Example
 
-Get rid of this (an example lifted from real code):
+**Get rid** of something like this (an example lifted from real code):
 
 ```c#
         private IEnumerable<MerchantMasterDto> GetMerchantByGuid(Guid merchantGuid)
@@ -323,3 +323,7 @@ And turn it into something like this:
                 new { MerchantGuid = merchantGuid }).FirstOrDefault());
         }
 ```
+
+Dapper.SimpleLoad takes care of both the SQL generation and object wire-up for you. You just have to tell it which objects to load, and it'll do the rest.
+
+It provides a Dapper-like API for querying that allows a high degree of customisation (for example, custom where clauses, and full custom SQL when you really need it) whilst minimising the amount of code you need to write and maintain.
