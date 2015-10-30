@@ -292,7 +292,7 @@ WHERE m.MerchantGUID = @MerchantGuid;",
         }
 ```
 
-And turn it into something like this:
+And replace it with something like this:
 
 ```c#
         public MerchantMasterDto GetMerchantByGuid(Guid merchantGuid)
