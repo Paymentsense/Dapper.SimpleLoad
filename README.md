@@ -6,7 +6,7 @@ Dapper.SimpleLoad simplifies Dapper multi-mapping to load complex objects from a
 
 ##Example
 
-**Get rid** of something like this (an example lifted from real code):
+Dapper multi-mapping works really well for simple examples, but as your code is extended, it can quickly get out of hand. Dapper.SimpleLoad allows you to avoid that. In other words, you can **get rid** of things like this (an example lifted from real code):
 
 ```c#
         private IEnumerable<MerchantMasterDto> GetMerchantByGuid(Guid merchantGuid)
@@ -292,7 +292,7 @@ WHERE m.MerchantGUID = @MerchantGuid;",
         }
 ```
 
-And replace it with something like this:
+And replace them with something more readable and maintainable:
 
 ```c#
         public MerchantMasterDto GetMerchantByGuid(Guid merchantGuid)
