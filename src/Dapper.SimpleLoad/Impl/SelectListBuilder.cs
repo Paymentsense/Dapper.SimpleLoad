@@ -38,17 +38,19 @@ namespace Dapper.SimpleLoad.Impl
                 if (!property.Prop.CanWrite
                     || property.HasAttribute<OneToManyAttribute>()
                     || property.HasAttribute<ManyToManyAttribute>()
+                    || property.HasAttribute<ManyToOneAttribute>()
+                    || property.HasAttribute<OneToOneAttribute>()
                     || property.HasAttribute<SimpleLoadIgnoreAttribute>()
                     || property.IsEnumerable)
                 {
                     continue;
                 }
 
-                if (property.HasAttribute<OneToOneAttribute>()
-                    && !string.IsNullOrEmpty(property.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn))
-                {
-                    continue;
-                }
+                //if (property.HasAttribute<OneToOneAttribute>()
+                //    && !string.IsNullOrEmpty(property.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn))
+                //{
+                //    continue;
+                //}
 
                 if (buffer.Length > 0 || iNeedALeadingComma)
                 {
