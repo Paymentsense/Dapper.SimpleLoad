@@ -24,9 +24,11 @@ namespace Dapper.SimpleLoad
         static SimpleLoadExtensions()
         {
             RowCountWarningEmitThreshold = 500;
+            QueryDurationMillisWarningEmitThreshold = 100;
         }
 
         public static int RowCountWarningEmitThreshold { get; set; }
+        public static long QueryDurationMillisWarningEmitThreshold { get; set; }
 
         public static IList<T1> CustomQuery<T1>(
             this IDbConnection connection, string completeParameterisedSqlQuery, object parameters)
@@ -275,6 +277,8 @@ namespace Dapper.SimpleLoad
                     Logger.Info("Split on:" + query.SplitOn);
                 }
 
+                var startTime = DateTime.Now.Ticks;
+
                 connection.Query(
                     query.Sql,
                     types.ToArray(),
@@ -381,18 +385,26 @@ namespace Dapper.SimpleLoad
                     splitOn: query.SplitOn,
                     param: parameters);
 
-                if (rowCount >= RowCountWarningEmitThreshold)
+                var totalTime = (DateTime.Now.Ticks - startTime) / TimeSpan.TicksPerMillisecond;
+
+                if (rowCount >= RowCountWarningEmitThreshold || totalTime > QueryDurationMillisWarningEmitThreshold)
                 {
                     if (Logger.IsWarnEnabled)
                     {
-                        Logger.Warn(string.Format("RECEIVED {0} ROWS IN QUERY RESULT SET.", rowCount));
+                        Logger.Warn(string.Format(
+                            "RECEIVED {0} ROWS IN QUERY RESULT SET IN {1}ms.",
+                            rowCount,
+                            totalTime));
                     }
                 }
                 else
                 {
                     if (Logger.IsInfoEnabled)
                     {
-                        Logger.Info(string.Format("Received {0} rows in query result set.", rowCount));
+                        Logger.Info(string.Format(
+                            "Received {0} rows in query result set in {1}ms.",
+                            rowCount,
+                            totalTime));
                     }
                 }
 
