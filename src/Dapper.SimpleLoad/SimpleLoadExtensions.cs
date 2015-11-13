@@ -21,6 +21,13 @@ namespace Dapper.SimpleLoad
 
         private class DontMap {}
 
+        static SimpleLoadExtensions()
+        {
+            RowCountWarningEmitThreshold = 500;
+        }
+
+        public static int RowCountWarningEmitThreshold { get; set; }
+
         public static IList<T1> CustomQuery<T1>(
             this IDbConnection connection, string completeParameterisedSqlQuery, object parameters)
         {
@@ -260,6 +267,7 @@ namespace Dapper.SimpleLoad
             try
             {
                 var results = new List<T1>();
+                var rowCount = 0;
 
                 if (Logger.IsInfoEnabled)
                 {
@@ -272,6 +280,8 @@ namespace Dapper.SimpleLoad
                     types.ToArray(),
                     objects =>
                     {
+                        ++rowCount;
+
                         for (int index = 0, size = objects.Length; index < size; ++index)
                         {
                             var current = objects[index];
@@ -370,6 +380,21 @@ namespace Dapper.SimpleLoad
                     },
                     splitOn: query.SplitOn,
                     param: parameters);
+
+                if (rowCount >= RowCountWarningEmitThreshold)
+                {
+                    if (Logger.IsWarnEnabled)
+                    {
+                        Logger.Warn(string.Format("RECEIVED {0} ROWS IN QUERY RESULT SET.", rowCount));
+                    }
+                }
+                else
+                {
+                    if (Logger.IsInfoEnabled)
+                    {
+                        Logger.Info(string.Format("Received {0} rows in query result set.", rowCount));
+                    }
+                }
 
                 return results;
             }
