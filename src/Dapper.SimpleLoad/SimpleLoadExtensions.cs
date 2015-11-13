@@ -313,7 +313,7 @@ namespace Dapper.SimpleLoad
                                 var targetObject = objects[targetEntry.Index];
                                 var targetsAlreadyEncountered = alreadyEncounteredDictionaries[targetEntry.Index];
                                 var targetPrimaryKey = targetEntry.Metadata.GetPrimaryKeyValueAsObject(targetObject);
-                                if (targetsAlreadyEncountered.Contains(targetObject))
+                                if (targetsAlreadyEncountered.Contains(targetPrimaryKey))
                                 {
                                     targetObject = targetsAlreadyEncountered[targetPrimaryKey];
                                 }
