@@ -321,6 +321,10 @@ namespace Dapper.SimpleLoad
                                 {
                                     targetObject = targetsAlreadyEncountered[targetPrimaryKey];
                                 }
+                                else
+                                {
+                                    targetsAlreadyEncountered[targetPrimaryKey] = targetObject;
+                                }
 
                                 if (propertyMetadata.Prop.PropertyType == entry.Type)
                                 {
