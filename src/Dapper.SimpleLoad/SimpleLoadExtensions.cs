@@ -266,6 +266,7 @@ namespace Dapper.SimpleLoad
             TypePropertyMap map)
         {
             var alreadyEncounteredDictionaries = CreateAlreadyEncounteredDictionaries(types.Count);
+            var alreadyEncounteredCollectionValues = new Dictionary<object, HashSet<object>>();
             try
             {
                 var results = new List<T1>();
@@ -368,7 +369,19 @@ namespace Dapper.SimpleLoad
                                                 metadata.DtoType.FullName));
                                     }
 
-                                    addMethod.Invoke(collection, new[] {current});
+                                    HashSet<object> seenBefore;
+                                    alreadyEncounteredCollectionValues.TryGetValue(collection, out seenBefore);
+                                    if (seenBefore == null)
+                                    {
+                                        seenBefore = new HashSet<object>();
+                                        alreadyEncounteredCollectionValues[collection] = seenBefore;
+                                    }
+
+                                    if (!seenBefore.Contains(current))
+                                    {
+                                        addMethod.Invoke(collection, new[] {current});
+                                        seenBefore.Add(current);
+                                    }
                                 }
                                 else
                                 {
