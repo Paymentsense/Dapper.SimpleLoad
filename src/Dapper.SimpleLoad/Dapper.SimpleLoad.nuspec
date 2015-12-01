@@ -16,7 +16,7 @@
     <tags>Dapper, SQL, micro-ORM</tags>
     <dependencies>
       <dependency id="Dapper" version="1.42" />
-	    <dependency id="Dapper.SimpleSave" version="1.0.154" />
+	    <dependency id="Dapper.SimpleSave" version="1.0.155" />
     </dependencies>
   </metadata>
 </package>
