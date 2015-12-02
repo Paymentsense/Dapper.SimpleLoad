@@ -159,5 +159,22 @@ namespace Dapper.SimpleLoad.Tests
                 CheckException(ioe);
             }
         }
+
+        [Test]
+        public void generates_join_using_specified_column_for_many_to_one_with_foreign_key_target_column()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    var results = connection.AutoQuery<SimpleUserWithSipDao, SipAccountMstDao>(
+                        new {UserKey = 1}).FirstOrDefault();
+                }
+            }
+            catch (InvalidOperationException ioe)
+            {
+                CheckException(ioe);
+            }
+        }
     }
 }

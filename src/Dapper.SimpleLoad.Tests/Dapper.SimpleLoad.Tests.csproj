@@ -119,6 +119,8 @@
     <Compile Include="RealisticDtos\SamplePopulatedDtos.cs" />
     <Compile Include="RealisticDtos\SHAREHOLDER_MST.cs" />
     <Compile Include="RealisticDtos\SimpleDepartmentDto.cs" />
+    <Compile Include="RealisticDtos\SimpleUserWithSipDao.cs" />
+    <Compile Include="RealisticDtos\SipAccountMstDao.cs" />
     <Compile Include="RealisticDtos\TeamDto.cs" />
     <Compile Include="RealisticDtos\TerminalModelDto.cs" />
     <Compile Include="RealisticDtos\UserDto.cs" />

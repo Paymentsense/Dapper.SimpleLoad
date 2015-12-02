@@ -11,7 +11,7 @@ namespace Dapper.SimpleLoad.Impl
         private int _linkTableAliasIndex;
         //  TODO: You are DEFINITELY going to want to cache these bad boys!
 
-        //  TODO: split on columns - make sure these are actually the PK columns otherwise it'll all go tits up (really they need to be unique to the object concerned or, due to Dapper limitations, it'll all go tits up, but there's nothing you can do about that in SimpleLoad)
+        //  TODO: split on columns - make sure these are actually the PK columns otherwise it'll all go tits up (really they need to be unique to the object concerned or, due to Dapper limitations, it'll go wrong, but there's nothing you can do about that in SimpleLoad)
 
         public IQuery BuildQuery(
             TypePropertyMap map,
@@ -141,11 +141,26 @@ namespace Dapper.SimpleLoad.Impl
                 AppendTableNameAndAlias(fromAndJoinsBuff, table, aliasForCurrentTable);
 
                 fromAndJoinsBuff.Append("    ON ");
-                if (targetProperty.HasAttribute<OneToOneAttribute>() && string.IsNullOrEmpty(targetProperty.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn)
-                    || targetProperty.HasAttribute<ManyToOneAttribute>())
+                if (targetProperty.HasAttribute<OneToOneAttribute>() && string.IsNullOrEmpty(targetProperty.GetAttribute<OneToOneAttribute>().ChildForeignKeyColumn))
                 {
                     //  Covers situation where foreign key column is on the target table
                     AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
+                    fromAndJoinsBuff.Append(" = ");
+                    AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
+                }
+                else if (targetProperty.HasAttribute<ManyToOneAttribute>())
+                {
+                    var manyToOne = targetProperty.GetAttribute<ManyToOneAttribute>();
+                    var targetColumn = manyToOne.ForeignKeyTargetColumnName;
+                    if (string.IsNullOrEmpty(targetColumn))
+                    {
+                        AppendJoinConditionArgument(entry, fromAndJoinsBuff, metadata.PrimaryKey, aliases);
+                    }
+                    else
+                    {
+                        AppendJoinConditionArgument(entry, fromAndJoinsBuff, targetColumn, aliases);
+                    }
+
                     fromAndJoinsBuff.Append(" = ");
                     AppendJoinConditionArgument(target, fromAndJoinsBuff, targetProperty, aliases);
                 }
@@ -219,11 +234,26 @@ namespace Dapper.SimpleLoad.Impl
             AppendJoinConditionArgument(fromAndJoinsBuff, property, alias);
         }
 
+        private static void AppendJoinConditionArgument(
+            TypePropertyMapEntry entry,
+            StringBuilder fromAndJoinsBuff,
+            string columnName,
+            string [] aliases)
+        {
+            var alias = aliases == null ? entry.Alias : aliases[entry.Index];
+            AppendJoinConditionArgument(fromAndJoinsBuff, columnName, alias);
+        }
+
         private static void AppendJoinConditionArgument(StringBuilder fromAndJoinsBuff, PropertyMetadata property, string alias)
+        {
+            AppendJoinConditionArgument(fromAndJoinsBuff, property.ColumnName, alias);
+        }
+
+        private static void AppendJoinConditionArgument(StringBuilder fromAndJoinsBuff, string columnName, string alias)
         {
             fromAndJoinsBuff.Append(alias);
             fromAndJoinsBuff.Append(".[");
-            fromAndJoinsBuff.Append(property.ColumnName);
+            fromAndJoinsBuff.Append(columnName);
             fromAndJoinsBuff.Append("]");
         }
 
