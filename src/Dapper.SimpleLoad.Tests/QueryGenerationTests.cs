@@ -1,29 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper.SimpleLoad.Tests.RealisticDtos;
-using Dapper.SimpleSave;
 using NUnit.Framework;
 
 namespace Dapper.SimpleLoad.Tests
 {
     [TestFixture]
-    public class QueryGenerationTests
+    public class QueryGenerationTests : BaseTests
     {
-        private void CheckException(InvalidOperationException ioe)
-        {
-            if (!ioe.Message.Contains("The ConnectionString property has not been initialized."))
-            {
-                throw new BadTimesException(
-                    "InvalidOperationException due to legitimate test failure: " + ioe.Message,
-                    ioe);
-            }
-        }
-
         [Test]
         public void generates_correct_query_for_complex_types()
         {
