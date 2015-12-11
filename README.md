@@ -4,9 +4,11 @@ Dapper.SimpleLoad simplifies Dapper multi-mapping to load complex objects from a
 
 [![Build status](https://ci.appveyor.com/api/projects/status/me6txem2givlymt4?svg=true)](https://ci.appveyor.com/project/PaymentSense/dapper-simpleload)
 
-##Example
+##Example: How can Dapper.SimpleLoad help me?
 
-Dapper multi-mapping works really well for simple examples, but as your code is extended, it can quickly get out of hand. Dapper.SimpleLoad allows you to avoid that. In other words, you can **get rid** of things like this (an example lifted from real code):
+[Dapper](https://github.com/StackExchange/dapper-dot-net) multi-mapping works really well for loading relatively simple objects but, as your requirements expand and the code becomes more complex, it can quickly get out of hand.
+
+Dapper.SimpleLoad allows you to avoid that. In other words, you can **get rid** of things like this gothic horror novel of multi-mapping (an example lifted from real code):
 
 ```c#
         private IEnumerable<MerchantMasterDto> GetMerchantByGuid(Guid merchantGuid)
