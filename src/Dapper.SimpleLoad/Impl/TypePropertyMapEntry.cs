@@ -48,6 +48,16 @@ namespace Dapper.SimpleLoad.Impl
                 {
                     if (property.HasAttribute<ForeignKeyReferenceAttribute>())
                     {
+                        //  Value type back references are the only property types we support. If there's any kind of object
+                        //  in there we ignore it for the purpose of back referencing. Basically, if something's marked with
+                        //  one of SimpleSave's cardinality attributes we assume it's a forward reference; if it's not marked
+                        //  with such a reference and it's not a value type then it's also not a supported foreign key column
+                        //  type, so we can't do anything with it anyway.
+                        if (!property.IsValueType && property.IsReferenceType)
+                        {
+                            continue;
+                        }
+
                         var foreignKey = property.GetAttribute<ForeignKeyReferenceAttribute>();
                         key = foreignKey.ReferencedDto;
                         if (!typesWeCareAbout.Contains(key))
