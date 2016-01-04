@@ -92,12 +92,14 @@
     <Compile Include="RealisticDtos\EmailAddressMasterDto.cs" />
     <Compile Include="RealisticDtos\EMAIL_ADDRESS_MST.cs" />
     <Compile Include="RealisticDtos\FIELD_ITEM_LUT.cs" />
+    <Compile Include="RealisticDtos\FullAddressDto.cs" />
     <Compile Include="RealisticDtos\GenAddressTypesEnum.cs" />
     <Compile Include="RealisticDtos\GenBusinessLegalTypeEnum.cs" />
     <Compile Include="RealisticDtos\GenCountryEnum.cs" />
     <Compile Include="RealisticDtos\GenRecStatusEnum.cs" />
     <Compile Include="RealisticDtos\GroupDto.cs" />
     <Compile Include="RealisticDtos\LEGAL_INFO_MST.cs" />
+    <Compile Include="RealisticDtos\LocationDto.cs" />
     <Compile Include="RealisticDtos\LOCATION_MST.cs" />
     <Compile Include="RealisticDtos\MerchantDetailsDto.cs" />
     <Compile Include="RealisticDtos\MerchantEntityType.cs" />
@@ -105,6 +107,7 @@
     <Compile Include="RealisticDtos\MERCHANT_MST.cs" />
     <Compile Include="RealisticDtos\MERCHANT_MST_CONTACT_LNK.cs" />
     <Compile Include="RealisticDtos\OFFER_TRN.cs" />
+    <Compile Include="RealisticDtos\OpportunityDto.cs" />
     <Compile Include="RealisticDtos\OPPORTUNITY_MST.cs" />
     <Compile Include="RealisticDtos\OppProvisionTypeEnum.cs" />
     <Compile Include="RealisticDtos\PhoneNumberDto.cs" />
@@ -113,6 +116,7 @@
     <Compile Include="RealisticDtos\PositionDto.cs" />
     <Compile Include="RealisticDtos\PostalDistrictNameDto.cs" />
     <Compile Include="RealisticDtos\PostCodeDetailsDto.cs" />
+    <Compile Include="RealisticDtos\PostcostDto.cs" />
     <Compile Include="RealisticDtos\PRINCIPAL_MST.cs" />
     <Compile Include="RealisticDtos\RecStatusEnum.cs" />
     <Compile Include="RealisticDtos\RoleDto.cs" />

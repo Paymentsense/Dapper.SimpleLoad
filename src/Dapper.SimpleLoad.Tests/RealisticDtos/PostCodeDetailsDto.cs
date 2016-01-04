@@ -10,6 +10,7 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
         public int? PostCodeKey { get; set; }
 
         [ManyToOne("PostalDistrictKey")]
+        [ForeignKeyReference(typeof(PostalDistrictNameDto))]
         [Column("PostalDistrictKey")]
         public PostalDistrictNameDto PostalDistrict { get; set; }
 
@@ -18,5 +19,17 @@ namespace Dapper.SimpleLoad.Tests.RealisticDtos
         public decimal Latitude { get; set; }
 
         public decimal Longitude { get; set; }
+
+        //  TODO: geo-location (if we care)
+
+        public string TownName { get; set; }
+
+        public int? CountyKey { get; set; }
+
+        public GenCountryEnum CountryKey { get; set; }
+
+        [SimpleSaveIgnore]
+        [OneToOne("PostCodeKey")]
+        public PostcodeDto PostCode { get; set; }
     }
 }

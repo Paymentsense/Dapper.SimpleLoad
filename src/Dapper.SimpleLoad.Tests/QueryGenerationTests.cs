@@ -161,5 +161,41 @@ namespace Dapper.SimpleLoad.Tests
                 CheckException(ioe);
             }
         }
+
+        [Test]
+        public void generates_correct_query_using_forward_referencing_foreign_key_attribute()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    var results = connection.AutoQuery<LocationDto>(
+                        new []
+                        {
+                            typeof(FullAddressDto),
+                                typeof(CountyDto),
+                                typeof(PostCodeDetailsDto),
+                                    typeof(PostcodeDto),
+                                    typeof(PostalDistrictNameDto),
+                            typeof(OpportunityDto),
+                                typeof(FullAddressDto),
+                                    typeof(CountyDto),
+                                    typeof(PostCodeDetailsDto),
+                                        typeof(PostalDistrictNameDto),
+                                        typeof(PostcodeDto),
+                                typeof(ShippingAddressDto),
+                                    typeof(CountyDto),
+                                    typeof(PostCodeDetailsDto),
+                                        typeof(PostalDistrictNameDto),
+                                        typeof(PostcodeDto),
+                        },
+                        new {LocationGuid = Guid.Empty});
+                }
+            }
+            catch (InvalidOperationException ioe)
+            {
+                CheckException(ioe);
+            }
+        }
     }
 }
