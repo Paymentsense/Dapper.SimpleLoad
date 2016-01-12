@@ -197,5 +197,27 @@ namespace Dapper.SimpleLoad.Tests
                 CheckException(ioe);
             }
         }
+
+        [Test]
+        public void Generates_correct_query_for_count()
+        {
+            try
+            {
+                using (var connection = new SqlConnection())
+                {
+                    connection
+                        .AutoQuery
+                        <PhoneNumberDto, CountryDto, CurrencyCodeDto>(new
+                        {
+                            PhoneNumberKey = 1
+                        }, 1);
+                }
+            }
+            catch (InvalidOperationException ioe)
+            {
+                CheckException(ioe);
+            }
+
+        }
     }
 }

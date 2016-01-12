@@ -22,6 +22,7 @@ namespace Dapper.SimpleLoad.Impl
         {
             var query = new Query();
             var selectListBuff = new StringBuilder();
+            var countBuff = new StringBuilder();
             var fromAndJoinsBuff = new StringBuilder();
             var whereConditionBuff = new StringBuilder();
             var splitOn = new StringBuilder();
@@ -30,9 +31,9 @@ namespace Dapper.SimpleLoad.Impl
             {
                 //  I wouldn't normally do this with a non-parameterised value but you can't
                 //  do SQL injection just using a positive integer.
-                selectListBuff.Append("TOP (");
-                selectListBuff.Append(desiredNumberOfResults);
-                selectListBuff.Append(") ");
+                countBuff.Append("TOP (");
+                countBuff.Append(desiredNumberOfResults);
+                countBuff.Append(") ");
             }
 
             for (int index = 0, size = map.Count; index < size; ++index)
@@ -78,8 +79,8 @@ namespace Dapper.SimpleLoad.Impl
                 }
             }
 
-            query.Sql = string.Format(@"SELECT {0}
-{1}{2};", selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+            query.Sql = string.Format(@"SELECT {0} {1}
+                {2}{3};", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
             query.SplitOn = splitOn.ToString();
             return query;
         }
