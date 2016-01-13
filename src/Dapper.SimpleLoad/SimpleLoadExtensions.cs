@@ -409,9 +409,14 @@ namespace Dapper.SimpleLoad
                     if (Logger.IsWarnEnabled)
                     {
                         Logger.Warn(string.Format(
-                            "RECEIVED {0} ROWS IN QUERY RESULT SET IN {1}ms.",
+                            @"RECEIVED {0} ROWS IN QUERY RESULT SET IN {1}ms FROM QUERY:
+{2}
+CALLING STACK TRACE:
+{3}",
                             rowCount,
-                            totalTime));
+                            totalTime,
+                            query.Sql,
+                            Environment.StackTrace));
                     }
                 }
                 else
