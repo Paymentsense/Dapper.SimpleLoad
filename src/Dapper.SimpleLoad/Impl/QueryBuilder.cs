@@ -80,7 +80,7 @@ namespace Dapper.SimpleLoad.Impl
             }
 
             query.Sql = string.Format(@"SELECT {0} {1}
-                {2}{3};", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+{2}{3};", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
             query.SplitOn = splitOn.ToString();
             return query;
         }

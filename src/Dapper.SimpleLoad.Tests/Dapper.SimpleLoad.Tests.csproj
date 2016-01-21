@@ -118,6 +118,7 @@
     <Compile Include="RealisticDtos\PostCodeDetailsDto.cs" />
     <Compile Include="RealisticDtos\PostcostDto.cs" />
     <Compile Include="RealisticDtos\PRINCIPAL_MST.cs" />
+    <Compile Include="RealisticDtos\ProSupportRule.cs" />
     <Compile Include="RealisticDtos\RecStatusEnum.cs" />
     <Compile Include="RealisticDtos\RoleDto.cs" />
     <Compile Include="RealisticDtos\SALES_CHANNEL_LNK.cs" />
