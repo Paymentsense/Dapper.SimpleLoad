@@ -16,7 +16,25 @@ namespace Dapper.SimpleLoad
         {
             using (var connection = _dbConnectionFactory.GetConnection())
             {
-                connection.Open();
+                switch (connection.State)
+                {
+                    case ConnectionState.Closed:
+                        connection.Open();
+                        break;
+
+                    case ConnectionState.Broken:
+                        connection.Close();
+                        connection.Open();
+                        break;
+
+                    case ConnectionState.Open:
+                    case ConnectionState.Connecting:
+                    case ConnectionState.Executing:
+                    case ConnectionState.Fetching:
+                    default:
+                        //  Do nothing - connection is already open
+                        break;
+                }
                 return work(connection);
             }
         }
