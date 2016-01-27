@@ -14,37 +14,38 @@ namespace Dapper.SimpleLoad
 
         protected TResult Execute<TResult>(Func<IDbConnection, TResult> work)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
-            {
-                switch (connection.State)
-                {
-                    case ConnectionState.Closed:
-                        connection.Open();
-                        break;
-
-                    case ConnectionState.Broken:
-                        connection.Close();
-                        connection.Open();
-                        break;
-
-                    case ConnectionState.Open:
-                    case ConnectionState.Connecting:
-                    case ConnectionState.Executing:
-                    case ConnectionState.Fetching:
-                    default:
-                        //  Do nothing - connection is already open
-                        break;
-                }
-                return work(connection);
-            }
+            var connection = _dbConnectionFactory.GetConnection();
+            MaybeOpenConnection(connection);
+            return work(connection);
         }
 
         protected void Execute(Action<IDbConnection> work)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            var connection = _dbConnectionFactory.GetConnection();
+            MaybeOpenConnection(connection);
+            work(connection);
+        }
+
+        private void MaybeOpenConnection(IDbConnection connection)
+        {
+            switch (connection.State)
             {
-                connection.Open();
-                work(connection);
+                case ConnectionState.Closed:
+                    connection.Open();
+                    break;
+
+                case ConnectionState.Broken:
+                    connection.Close();
+                    connection.Open();
+                    break;
+
+                case ConnectionState.Open:
+                case ConnectionState.Connecting:
+                case ConnectionState.Executing:
+                case ConnectionState.Fetching:
+                default:
+                    //  Do nothing - connection is already open
+                    break;
             }
         }
     }
