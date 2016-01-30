@@ -14,16 +14,20 @@ namespace Dapper.SimpleLoad
 
         protected TResult Execute<TResult>(Func<IDbConnection, TResult> work)
         {
-            var connection = _dbConnectionFactory.GetConnection();
-            MaybeOpenConnection(connection);
-            return work(connection);
+            using (var connection = _dbConnectionFactory.GetConnection())
+            {
+                MaybeOpenConnection(connection);
+                return work(connection);
+            }
         }
 
         protected void Execute(Action<IDbConnection> work)
         {
-            var connection = _dbConnectionFactory.GetConnection();
-            MaybeOpenConnection(connection);
-            work(connection);
+            using (var connection = _dbConnectionFactory.GetConnection())
+            {
+                MaybeOpenConnection(connection);
+                work(connection);
+            }
         }
 
         private void MaybeOpenConnection(IDbConnection connection)
