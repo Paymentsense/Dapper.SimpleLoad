@@ -17,18 +17,9 @@ namespace Dapper.SimpleLoad
 {
     public static class SimpleLoadExtensions
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof (SimpleLoadExtensions));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (SimpleLoadExtensions));
 
         private class DontMap {}
-
-        static SimpleLoadExtensions()
-        {
-            RowCountWarningEmitThreshold = 500;
-            QueryDurationMillisWarningEmitThreshold = 100;
-        }
-
-        public static int RowCountWarningEmitThreshold { get; set; }
-        public static long QueryDurationMillisWarningEmitThreshold { get; set; }
 
         public static IList<T1> CustomQuery<T1>(
             this IDbConnection connection, string completeParameterisedSqlQuery, object parameters)
@@ -171,37 +162,37 @@ namespace Dapper.SimpleLoad
         public static IList<T1> AutoQuery<T1>(
             this IDbConnection connection, Type[] additionalTypes, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1>(connection, additionalTypes, null, null, parameters);
+            return AutoQuery<T1>(connection, additionalTypes, null, null, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, T3, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, T3, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3, T4>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, T3, T4, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, T3, T4, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3, T4, T5>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, T3, T4, T5, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, T3, T4, T5, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3, T4, T5, T6>(
@@ -272,13 +263,10 @@ namespace Dapper.SimpleLoad
                 var results = new List<T1>();
                 var rowCount = 0;
 
-                if (Logger.IsInfoEnabled)
-                {
-                    Logger.Info("Executing query:\r\n" + query.Sql);
-                    Logger.Info("Split on:" + query.SplitOn);
-                }
+                QueryExecutionLogger.Executing(query, parameters);
 
-                var startTime = DateTime.Now.Ticks;
+                long    startTime = DateTime.Now.Ticks,
+                        timeToFirstResult = -1;
 
                 connection.Query(
                     query.Sql,
@@ -286,6 +274,11 @@ namespace Dapper.SimpleLoad
                     objects =>
                     {
                         ++rowCount;
+
+                        if (timeToFirstResult == -1)
+                        {
+                            timeToFirstResult = (DateTime.Now.Ticks - startTime) / TimeSpan.TicksPerMillisecond;
+                        }
 
                         for (int index = 0, size = objects.Length; index < size; ++index)
                         {
@@ -402,33 +395,7 @@ namespace Dapper.SimpleLoad
                     splitOn: query.SplitOn,
                     param: parameters);
 
-                var totalTime = (DateTime.Now.Ticks - startTime) / TimeSpan.TicksPerMillisecond;
-
-                if (rowCount >= RowCountWarningEmitThreshold || totalTime > QueryDurationMillisWarningEmitThreshold)
-                {
-                    if (Logger.IsWarnEnabled)
-                    {
-                        Logger.Warn(string.Format(
-                            @"RECEIVED {0} ROWS IN QUERY RESULT SET IN {1}ms FROM QUERY:
-{2}
-CALLING STACK TRACE:
-{3}",
-                            rowCount,
-                            totalTime,
-                            query.Sql,
-                            Environment.StackTrace));
-                    }
-                }
-                else
-                {
-                    if (Logger.IsInfoEnabled)
-                    {
-                        Logger.Info(string.Format(
-                            "Received {0} rows in query result set in {1}ms.",
-                            rowCount,
-                            totalTime));
-                    }
-                }
+                QueryExecutionLogger.Executed(query, parameters, rowCount, startTime, timeToFirstResult);
 
                 return results;
             }
@@ -437,6 +404,7 @@ CALLING STACK TRACE:
                 throw new AnnotatedSqlException(se, query.Sql, query.SplitOn, parameters);
             }
         }
+
 
         private static IList<Hashtable> CreateAlreadyEncounteredDictionaries(int count)
         {
