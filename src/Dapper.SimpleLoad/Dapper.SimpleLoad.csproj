@@ -73,11 +73,14 @@
     <Compile Include="Impl\SelectListBuilder.cs" />
     <Compile Include="Impl\TypePropertyMap.cs" />
     <Compile Include="Impl\TypePropertyMapEntry.cs" />
+    <Compile Include="Preconditions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaseCustomQueryDapperRepository.cs" />
     <Compile Include="IDbConnectionFactory.cs" />
+    <Compile Include="QueryExecutionLogger.cs" />
     <Compile Include="ReferenceData\IReferenceDataService.cs" />
     <Compile Include="ReferenceData\ReferenceDataService.cs" />
+    <Compile Include="SimpleLoadConfiguration.cs" />
     <Compile Include="SimpleLoadExtensions.cs" />
     <Compile Include="SimpleLoadIgnoreAttribute.cs" />
   </ItemGroup>
