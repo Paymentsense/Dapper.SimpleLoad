@@ -162,37 +162,37 @@ namespace Dapper.SimpleLoad
         public static IList<T1> AutoQuery<T1>(
             this IDbConnection connection, Type[] additionalTypes, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1>(connection, additionalTypes, null, null, parameters);
+            return AutoQuery<T1>(connection, additionalTypes, null, null, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, DontMap, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, T3, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, T3, DontMap, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3, T4>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, T3, T4, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, T3, T4, DontMap, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3, T4, T5>(
             this IDbConnection connection, string [] tableAliases, string whereClauseExpression, object parameters, int desiredNumberOfResults = 0)
         {
-            return AutoQuery<T1, T2, T3, T4, T5, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters);
+            return AutoQuery<T1, T2, T3, T4, T5, DontMap, DontMap, DontMap>(connection, tableAliases, whereClauseExpression, parameters, desiredNumberOfResults);
         }
 
         public static IList<T1> AutoQuery<T1, T2, T3, T4, T5, T6>(
