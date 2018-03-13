@@ -66,6 +66,8 @@
     <Compile Include="BadTimesException.cs" />
     <Compile Include="BaseTests.cs" />
     <Compile Include="InheritanceTests.cs" />
+    <Compile Include="Mocks\MockDataParameterCollection.cs" />
+    <Compile Include="Mocks\MockDbQueryExecutedException.cs" />
     <Compile Include="QueryGenerationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealisticDtos\ADDON_OFFER_TRN.cs" />
@@ -129,6 +131,9 @@
     <Compile Include="RealisticDtos\UserDto.cs" />
     <Compile Include="RealisticDtos\UserStatusEnum.cs" />
     <Compile Include="RealisticDtos\UserWithDepartmentsDto.cs" />
+    <Compile Include="Mocks\MockDbConnection.cs" />
+    <Compile Include="Mocks\MockDbCommand.cs" />
+    <Compile Include="Mocks\MockDbParameter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

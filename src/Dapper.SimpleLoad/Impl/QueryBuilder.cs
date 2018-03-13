@@ -12,22 +12,44 @@ namespace Dapper.SimpleLoad.Impl
         //  TODO: You are DEFINITELY going to want to cache these bad boys!
 
         //  TODO: split on columns - make sure these are actually the PK columns otherwise it'll all go tits up (really they need to be unique to the object concerned or, due to Dapper limitations, it'll go wrong, but there's nothing you can do about that in SimpleLoad)
+        public IQuery BuildQuery(
+            TypePropertyMap map,
+            string[] aliases,
+            string whereClauseExpression,
+            object parameters,
+            int desiredNumberOfResults)
+        {
+            return BuildQuery(map, aliases, whereClauseExpression, parameters, desiredNumberOfResults, 0, null);
+        }
 
         public IQuery BuildQuery(
             TypePropertyMap map,
             string [] aliases,
             string whereClauseExpression,
             object parameters,
-            int desiredNumberOfResults)
+            int desiredNumberOfResults,
+            int offsetInResults,
+            string orderByClauseExpression)
         {
             var query = new Query();
+            var queryBuff = new StringBuilder();
             var selectListBuff = new StringBuilder();
             var countBuff = new StringBuilder();
             var fromAndJoinsBuff = new StringBuilder();
             var whereConditionBuff = new StringBuilder();
             var splitOn = new StringBuilder();
 
-            if (desiredNumberOfResults > 0)
+            if (offsetInResults < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offsetInResults), "Offset must be zero or positive");
+            }
+
+            if (offsetInResults > 0 && string.IsNullOrEmpty(orderByClauseExpression))
+            {
+                throw new ArgumentException("Sort column must be specified if offsetInResults is greater than zero", nameof(orderByClauseExpression));
+            }
+
+            if (desiredNumberOfResults > 0 && offsetInResults == 0)
             {
                 //  I wouldn't normally do this with a non-parameterised value but you can't
                 //  do SQL injection just using a positive integer.
@@ -40,7 +62,7 @@ namespace Dapper.SimpleLoad.Impl
             {
                 var entry = map[index];
                 var metadata = entry.Metadata;
-                var alias = string.IsNullOrEmpty(whereClauseExpression) ? entry.Alias : aliases[index];
+                var alias = string.IsNullOrEmpty(whereClauseExpression) && string.IsNullOrEmpty(orderByClauseExpression) ? entry.Alias : aliases[index];
                 var firstColumn = SelectListBuilder.AppendSelectListAndGetFirstColumnFor(
                     selectListBuff,
                     metadata,
@@ -79,8 +101,26 @@ namespace Dapper.SimpleLoad.Impl
                 }
             }
 
-            query.Sql = string.Format(@"SELECT {0} {1}
-{2}{3};", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+            queryBuff.AppendFormat(@"SELECT {0} {1}
+{2}{3}", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+
+            if (!string.IsNullOrEmpty(orderByClauseExpression))
+            {
+                queryBuff.Append(" ORDER BY ").Append(orderByClauseExpression);
+            }
+
+            if (offsetInResults > 0)
+            {
+                queryBuff.Append(" OFFSET ")
+                    .Append(offsetInResults)
+                    .Append(" ROWS FETCH NEXT ")
+                    .Append(desiredNumberOfResults)
+                    .Append(" ROWS ONLY");
+            }
+
+            queryBuff.Append(";");
+
+            query.Sql = queryBuff.ToString();
             query.SplitOn = splitOn.ToString();
             return query;
         }
