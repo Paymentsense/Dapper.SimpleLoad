@@ -62,7 +62,7 @@ namespace Dapper.SimpleLoad.Impl
             {
                 var entry = map[index];
                 var metadata = entry.Metadata;
-                var alias = string.IsNullOrEmpty(whereClauseExpression) && string.IsNullOrEmpty(orderByClauseExpression) ? entry.Alias : aliases[index];
+                var alias = string.IsNullOrEmpty(whereClauseExpression) || string.IsNullOrEmpty(orderByClauseExpression) ? entry.Alias : aliases[index];
                 var firstColumn = SelectListBuilder.AppendSelectListAndGetFirstColumnFor(
                     selectListBuff,
                     metadata,
