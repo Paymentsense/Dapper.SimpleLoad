@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Data;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data;
 
 namespace Dapper.SimpleLoad.Tests.Mocks
 {
     public class MockDataParameterCollection : List<IDataParameter>, IDataParameterCollection
     {
-        public object this[string parameterName] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public object this[string parameterName] { get { return null; } set {} }
 
         public bool Contains(string parameterName)
         {

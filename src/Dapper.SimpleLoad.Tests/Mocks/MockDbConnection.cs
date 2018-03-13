@@ -17,7 +17,7 @@ namespace Dapper.SimpleLoad.Tests.Mocks
 
         public string ConnectionString { get; set; }
 
-        public int ConnectionTimeout => throw new NotImplementedException();
+        public int ConnectionTimeout => 0;
 
         public string Database => "TEST_DB";
 
