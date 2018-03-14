@@ -19,7 +19,7 @@ namespace Dapper.SimpleLoad.Impl
             object parameters,
             int desiredNumberOfResults)
         {
-            return BuildQuery(map, aliases, whereClauseExpression, parameters, desiredNumberOfResults, 0, null);
+            return BuildQuery(map, aliases, whereClauseExpression, parameters, desiredNumberOfResults, null, null);
         }
 
         public IQuery BuildQuery(
@@ -28,7 +28,7 @@ namespace Dapper.SimpleLoad.Impl
             string whereClauseExpression,
             object parameters,
             int desiredNumberOfResults,
-            int offsetInResults,
+            int? offsetInResults,
             string orderByClauseExpression)
         {
             var query = new Query();
@@ -38,18 +38,19 @@ namespace Dapper.SimpleLoad.Impl
             var fromAndJoinsBuff = new StringBuilder();
             var whereConditionBuff = new StringBuilder();
             var splitOn = new StringBuilder();
+            var paginating = offsetInResults.HasValue;
 
             if (offsetInResults < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offsetInResults), "Offset must be zero or positive");
             }
 
-            if (offsetInResults > 0 && string.IsNullOrEmpty(orderByClauseExpression))
+            if (paginating && string.IsNullOrEmpty(orderByClauseExpression))
             {
-                throw new ArgumentException("Sort column must be specified if offsetInResults is greater than zero", nameof(orderByClauseExpression));
+                throw new ArgumentException("Order by column must be specified if paginating", nameof(orderByClauseExpression));
             }
 
-            if (desiredNumberOfResults > 0 && offsetInResults == 0)
+            if (desiredNumberOfResults > 0 && !paginating)
             {
                 //  I wouldn't normally do this with a non-parameterised value but you can't
                 //  do SQL injection just using a positive integer.
@@ -82,9 +83,6 @@ namespace Dapper.SimpleLoad.Impl
                 {
                     var table = metadata.GetAttribute<TableAttribute>();
 
-                    fromAndJoinsBuff.Append("FROM ");
-                    AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
-
                     if (string.IsNullOrEmpty(whereClauseExpression))
                     {
                         BuildWhereCondition(parameters, whereConditionBuff, entry, aliases);
@@ -94,6 +92,31 @@ namespace Dapper.SimpleLoad.Impl
                         whereConditionBuff.Append("WHERE ");
                         whereConditionBuff.Append(whereClauseExpression);
                     }
+
+                    fromAndJoinsBuff.Append(" FROM ");
+
+                    if (paginating)
+                    {
+                        fromAndJoinsBuff.Append("(SELECT ");
+                        fromAndJoinsBuff.Append("* FROM ");
+                        AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
+
+                        fromAndJoinsBuff
+                            .Append(whereConditionBuff)
+                            .Append(" ORDER BY ")
+                            .Append(orderByClauseExpression)
+                            .Append(" OFFSET ")
+                            .Append(offsetInResults)
+                            .Append(" ROWS FETCH NEXT ")
+                            .Append(desiredNumberOfResults)
+                            .Append(" ROWS ONLY")
+                            .Append(") AS ")
+                            .AppendLine(alias);
+                    }
+                    else
+                    {
+                        AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
+                    }
                 }
                 else
                 {
@@ -101,21 +124,19 @@ namespace Dapper.SimpleLoad.Impl
                 }
             }
 
-            queryBuff.AppendFormat(@"SELECT {0} {1}
-{2}{3}", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+            queryBuff.Append("SELECT ")
+                .Append(countBuff)
+                .Append(selectListBuff)
+                .Append(fromAndJoinsBuff);
 
-            if (!string.IsNullOrEmpty(orderByClauseExpression))
+            if (!paginating)
             {
-                queryBuff.Append(" ORDER BY ").Append(orderByClauseExpression);
-            }
+                queryBuff.Append(whereConditionBuff);
 
-            if (offsetInResults > 0)
-            {
-                queryBuff.Append(" OFFSET ")
-                    .Append(offsetInResults)
-                    .Append(" ROWS FETCH NEXT ")
-                    .Append(desiredNumberOfResults)
-                    .Append(" ROWS ONLY");
+                if (!string.IsNullOrEmpty(orderByClauseExpression))
+                {
+                    queryBuff.Append(" ORDER BY ").Append(orderByClauseExpression);
+                }
             }
 
             queryBuff.Append(";");

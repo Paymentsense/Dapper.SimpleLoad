@@ -841,7 +841,7 @@ WHERE r.[IsForFirstData] = @isForFirstData;"),
                 {
                     Assert.AreEqual
                     (
-                        NormalizeWhitespace("SELECT [t].[TeamKey], [t].[Name] FROM [user].TEAM_MST AS t ORDER BY t.[Name] OFFSET 100 ROWS FETCH NEXT 10 ROWS ONLY;"), 
+                        NormalizeWhitespace("SELECT [t].[TeamKey], [t].[Name] FROM (SELECT * FROM [user].TEAM_MST AS t ORDER BY t.[Name] OFFSET 100 ROWS FETCH NEXT 10 ROWS ONLY) AS t ;"), 
                         NormalizeWhitespace(connection.FirstCommandText)
                     );
                 }
