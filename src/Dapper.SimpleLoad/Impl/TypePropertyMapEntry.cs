@@ -17,7 +17,8 @@ namespace Dapper.SimpleLoad.Impl
             Type type,
             string alias,
             int index,
-            ISet<Type> typesWeCareAbout)
+            ISet<Type> typesWeCareAbout,
+            IEnumerable<Type> types)
         {
             Type = type;
             Metadata = cache.GetMetadataFor(type);
@@ -60,9 +61,15 @@ namespace Dapper.SimpleLoad.Impl
 
                         var foreignKey = property.GetAttribute<ForeignKeyReferenceAttribute>();
                         key = foreignKey.ReferencedDto;
+
                         if (!typesWeCareAbout.Contains(key))
                         {
-                            continue;
+                            key = types.Take(index).Reverse().FirstOrDefault(t => key.IsAssignableFrom(t));
+
+                            if (key == null)
+                            {
+                                continue;
+                            }
                         }
                     }
                     else
