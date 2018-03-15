@@ -12,22 +12,45 @@ namespace Dapper.SimpleLoad.Impl
         //  TODO: You are DEFINITELY going to want to cache these bad boys!
 
         //  TODO: split on columns - make sure these are actually the PK columns otherwise it'll all go tits up (really they need to be unique to the object concerned or, due to Dapper limitations, it'll go wrong, but there's nothing you can do about that in SimpleLoad)
+        public IQuery BuildQuery(
+            TypePropertyMap map,
+            string[] aliases,
+            string whereClauseExpression,
+            object parameters,
+            int desiredNumberOfResults)
+        {
+            return BuildQuery(map, aliases, whereClauseExpression, parameters, desiredNumberOfResults, null, null);
+        }
 
         public IQuery BuildQuery(
             TypePropertyMap map,
             string [] aliases,
             string whereClauseExpression,
             object parameters,
-            int desiredNumberOfResults)
+            int desiredNumberOfResults,
+            int? offsetInResults,
+            string orderByClauseExpression)
         {
             var query = new Query();
+            var queryBuff = new StringBuilder();
             var selectListBuff = new StringBuilder();
             var countBuff = new StringBuilder();
             var fromAndJoinsBuff = new StringBuilder();
             var whereConditionBuff = new StringBuilder();
             var splitOn = new StringBuilder();
+            var paginating = offsetInResults.HasValue;
 
-            if (desiredNumberOfResults > 0)
+            if (offsetInResults < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offsetInResults), "Offset must be zero or positive");
+            }
+
+            if (paginating && string.IsNullOrEmpty(orderByClauseExpression))
+            {
+                throw new ArgumentException("Order by column must be specified if paginating", nameof(orderByClauseExpression));
+            }
+
+            if (desiredNumberOfResults > 0 && !paginating)
             {
                 //  I wouldn't normally do this with a non-parameterised value but you can't
                 //  do SQL injection just using a positive integer.
@@ -40,7 +63,7 @@ namespace Dapper.SimpleLoad.Impl
             {
                 var entry = map[index];
                 var metadata = entry.Metadata;
-                var alias = string.IsNullOrEmpty(whereClauseExpression) ? entry.Alias : aliases[index];
+                var alias = string.IsNullOrEmpty(whereClauseExpression) && string.IsNullOrEmpty(orderByClauseExpression) ? entry.Alias : aliases[index];
                 var firstColumn = SelectListBuilder.AppendSelectListAndGetFirstColumnFor(
                     selectListBuff,
                     metadata,
@@ -60,9 +83,6 @@ namespace Dapper.SimpleLoad.Impl
                 {
                     var table = metadata.GetAttribute<TableAttribute>();
 
-                    fromAndJoinsBuff.Append("FROM ");
-                    AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
-
                     if (string.IsNullOrEmpty(whereClauseExpression))
                     {
                         BuildWhereCondition(parameters, whereConditionBuff, entry, aliases);
@@ -72,6 +92,31 @@ namespace Dapper.SimpleLoad.Impl
                         whereConditionBuff.Append("WHERE ");
                         whereConditionBuff.Append(whereClauseExpression);
                     }
+
+                    fromAndJoinsBuff.Append(" FROM ");
+
+                    if (paginating)
+                    {
+                        fromAndJoinsBuff.Append("(SELECT ");
+                        fromAndJoinsBuff.Append("* FROM ");
+                        AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
+
+                        fromAndJoinsBuff
+                            .Append(whereConditionBuff)
+                            .Append(" ORDER BY ")
+                            .Append(orderByClauseExpression)
+                            .Append(" OFFSET ")
+                            .Append(offsetInResults)
+                            .Append(" ROWS FETCH NEXT ")
+                            .Append(desiredNumberOfResults)
+                            .Append(" ROWS ONLY")
+                            .Append(") AS ")
+                            .AppendLine(alias);
+                    }
+                    else
+                    {
+                        AppendTableNameAndAlias(fromAndJoinsBuff, table, alias);
+                    }
                 }
                 else
                 {
@@ -79,8 +124,24 @@ namespace Dapper.SimpleLoad.Impl
                 }
             }
 
-            query.Sql = string.Format(@"SELECT {0} {1}
-{2}{3};", countBuff, selectListBuff, fromAndJoinsBuff, whereConditionBuff);
+            queryBuff.Append("SELECT ")
+                .Append(countBuff)
+                .Append(selectListBuff)
+                .Append(fromAndJoinsBuff);
+
+            if (!paginating)
+            {
+                queryBuff.Append(whereConditionBuff);
+
+                if (!string.IsNullOrEmpty(orderByClauseExpression))
+                {
+                    queryBuff.Append(" ORDER BY ").Append(orderByClauseExpression);
+                }
+            }
+
+            queryBuff.Append(";");
+
+            query.Sql = queryBuff.ToString();
             query.SplitOn = splitOn.ToString();
             return query;
         }

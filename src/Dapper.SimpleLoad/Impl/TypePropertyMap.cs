@@ -30,7 +30,8 @@ namespace Dapper.SimpleLoad.Impl
                     type,
                     AliasGenerator.GenerateAliasFor(type, index),
                     index,
-                    typeSet));
+                    typeSet,
+                    types));
                 ++index;
             }
         }
